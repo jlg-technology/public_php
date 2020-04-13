@@ -23,7 +23,8 @@
     },
     "autoload": {
         "classmap": [
-            "src/php"
+            "src/php",
+            "vendor"
         ]
     },
     "autoload-dev": {
