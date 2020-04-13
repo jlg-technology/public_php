@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace jlg_technology\model;
+namespace jlgtechnology\model;
 
 use \Exception as Exception;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace jlg_technology\model;
+namespace jlgtechnology\model;
 
 use PHPUnit\Framework\TestCase;
 
@@ -58,7 +58,7 @@ class FileTest extends TestCase
         $strName = "Test 1";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 123;
+        $strCategoryId = 1;
 
         $modelFile = File::create(
             $strName,
@@ -98,7 +98,7 @@ class FileTest extends TestCase
         $strName = "fake";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 123;
+        $strCategoryId = 1;
 
         $this->expectException(Exception::class);
 
@@ -115,7 +115,7 @@ class FileTest extends TestCase
         $strName = "directory";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 123;
+        $strCategoryId = 1;
 
         $this->expectException(Exception::class);
 
@@ -132,7 +132,24 @@ class FileTest extends TestCase
         $strName = "unreadable";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 123;
+        $strCategoryId = 1;
+
+        $this->expectException(Exception::class);
+
+        $modelFile = File::create(
+            $strName,
+            $strMimeType,
+            $strDescription,
+            $strCategoryId
+        );
+    }
+
+    public function testCreate_Category_Invalid()
+    {
+        $strName = "Test 1";
+        $strMimeType = "Test 2";
+        $strDescription = "Test 3";
+        $strCategoryId = 999;
 
         $this->expectException(Exception::class);
 
@@ -149,7 +166,7 @@ class FileTest extends TestCase
         $strName = "Test 1";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 123;
+        $strCategoryId = 1;
         $strUploadPath = "Test 4";
 
         $modelFile = File::create(

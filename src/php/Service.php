@@ -1,6 +1,6 @@
 <?php
 
-namespace jlg_technology;
+namespace jlgtechnology;
 
 class Service
 {
