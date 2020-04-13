@@ -1,0 +1,17 @@
+<phpunit    bootstrap="vendor/autoload.php"
+            colors="true"
+            processIsolation="true"
+            reportUselessTests="true"
+            showUncoveredFiles="true"
+            strictCoverage="true"
+            verbose="true">
+            <testsuites>
+                <testsuite name="unitTests">
+                    <directory>test/phpunit</directory>
+                </testsuite>
+            </testsuites>
+            <logging>
+                <log type="coverage-html" target="reports/coverage" />
+                <log type="coverage-text" target="" showUncoveredFiles="false"/>
+            </logging>
+</phpunit>

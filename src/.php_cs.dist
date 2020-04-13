@@ -1,0 +1,29 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->in(
+        [
+            'src/php/',
+        ]
+    );
+
+return PhpCsFixer\Config::create()
+    ->setRules(array(
+        // List of all available rules here: https://github.com/FriendsOfPHP/PHP-CS-Fixer#usage
+        // I've implemented some basic ones for now, shouldn't be _too_ strict.
+
+        'function_typehint_space' => true,
+        // We can possibly use this in the future, no need for things like
+        // @author in comments
+        // 'general_phpdoc_annotation_remove' => ['author'],
+        'line_ending' => true,
+        'method_chaining_indentation' => true,
+        'ternary_to_null_coalescing' => true,
+        'no_closing_tag' => true,
+        'no_spaces_inside_parenthesis' => true,
+        'no_trailing_comma_in_singleline_array' => true,
+        'no_unused_imports' => true,
+        'no_useless_else' => true,
+        'no_useless_return' => true
+    ))
+    ->setFinder($finder);
