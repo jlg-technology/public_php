@@ -63,7 +63,7 @@ class Service
 
         $arrResponse = self::_decodeJSONResponse($guzzleResponse);
 
-        exit(var_dump($arrResponse));
+        return new self($arrResponse["access_token"]);
     }
 
     private static function _makeRequest(
@@ -98,8 +98,10 @@ class Service
             $arrOptions[GuzzleRequestOptions::FORM_PARAMS] = $arrData;
         }
 
+        $guzzleClient = new GuzzleClient();
+
         try {
-            $guzzleResponse = $this->_guzzleClient->request(
+            $guzzleResponse = $guzzleClient->request(
                 $strMethod,
                 $strUrl,
                 $arrOptions
@@ -109,7 +111,7 @@ class Service
             throw new Exception(
                 sprintf(
                     "Client error returned from %s (%s)",
-                    $strURL,
+                    $strUrl,
                     $ex->getResponse()->getReasonPhrase()
                 ), 
                 $ex->getResponse()->getStatusCode()
@@ -119,7 +121,7 @@ class Service
             throw new Exception(
                 sprintf(
                     "Server error returned from %s (%s)",
-                    $strURL,
+                    $strUrl,
                     $ex->getResponse()->getReasonPhrase()
                 ), 
                 $ex->getResponse()->getStatusCode()
@@ -155,8 +157,3 @@ class Service
         return $arrResponse;
     }
 }
-
-$objService = Service::createFromCredentials(
-    "JJnSJT0ibfYn6yiiwM6Boy0hnes81sPR",
-    "gBGRAW-2WXT3nNepwxLSjEVuCsf22Qhn4YZUWHJYwFy7_fH20f8JCiHqJrSgrXBG"
-);
