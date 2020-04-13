@@ -1,0 +1,28 @@
+{
+  "name": "jlg_public",
+  "version": "1.0.0",
+  "description": "Service to access CRM's third party API",
+  "main": "echo \"Error: no main specified\" && exit 1",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --mode=development --watch",
+    "build": "webpack --mode=production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jlg-technology/public_php"
+  },
+  "author": "Francis Bryson",
+  "license": "UNLICENSED",
+  "homepage": "https://github.com/jlg-technology/public_php#readme",
+  "devDependencies": {
+    "grunt": "0.4.5",
+    "grunt-composer": "0.4.0",
+    "grunt-exec": "0.4.6",
+    "grunt-php-cs-fixer": "git+https://github.com/WalshyDev/grunt-php-cs-fixer.git",
+    "grunt-phpcs": "git+https://github.com/Deep-Web-Technologies/grunt-phpcs.git",
+    "grunt-phpunit-runner": "0.1.9",
+    "matchdep": "1.0.1"
+  },
+  "dependencies": {}
+}
