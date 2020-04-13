@@ -26,7 +26,9 @@ abstract class AbstractModel
     )
     {
         if (!in_array($strField, static::getFields())) {
-            throw new Exception();
+            throw new Exception(
+                "'$strField' is not a valid field for " . get_class($this)
+            );
         }
 
         return $this->_arrData[$strField] ?? $mixedDefault;
@@ -39,7 +41,9 @@ abstract class AbstractModel
     )
     {
         if (!in_array($strField, static::getFields())) {
-            throw new Exception();
+            throw new Exception(
+                "'$strField' is not a valid field for " . get_class($this)
+            );
         }
 
         $this->_arrData[$strField] = $mixedValue ?? $mixedDefault;

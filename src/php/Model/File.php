@@ -44,7 +44,7 @@ class File extends AbstractModel
         }
 
         if (!in_array($intCategoryId, self::getCategoryIds())) {
-            throw new Exception("'$intCategoryId' is not a valid category");
+            throw new Exception("'$intCategoryId' is not a valid category Id");
         }
 
         return new self(
@@ -87,6 +87,7 @@ class File extends AbstractModel
         ];
     }
 
+    // A company's file must have one of these categories
     public static function getCompanyCategoryIds() : array
     {
         return [
@@ -100,6 +101,7 @@ class File extends AbstractModel
         ];
     }
 
+    // A person's file must have one of these categories
     public static function getPersonCategoryIds() : array
     {
         return [
