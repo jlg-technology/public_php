@@ -43,12 +43,14 @@ class File extends AbstractModel
             throw new Exception("'$strName' is not readable");
         }
 
-        return new self([
-            self::FIELD_NAME        => $strName,
-            self::FIELD_MIME_TYPE   => $strMimeType,
-            self::FIELD_DESCRIPTION => $strDescription,
-            self::FIELD_CATEGORY_ID => $intCategoryId
-        ]);
+        return new self(
+            [
+                self::FIELD_NAME        => $strName,
+                self::FIELD_MIME_TYPE   => $strMimeType,
+                self::FIELD_DESCRIPTION => $strDescription,
+                self::FIELD_CATEGORY_ID => $intCategoryId
+            ]
+        );
     }
 
     /**

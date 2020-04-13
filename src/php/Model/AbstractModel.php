@@ -36,7 +36,7 @@ abstract class AbstractModel
         string $strField,
         $mixedValue,
         $mixedDefault = null
-    ) : self
+    )
     {
         if (!in_array($strField, static::getFields())) {
             throw new Exception();
