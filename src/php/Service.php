@@ -22,12 +22,9 @@ use \Exception as Exception;
 
 class Service
 {
-    // private const CRM_AUTH_ENDPOINT = 
-    //     "https://auth.just-cashflow.com/oauth/token";
-    //private const CRM_API_URL = "https://api.crm.dev.jlg-technology.com";
     private const CRM_AUTH_ENDPOINT = 
         "https://auth.just-cashflow.com/oauth/token";
-    private const CRM_API_URL = "http://api.alfi.local";
+    private const CRM_API_URL = "https://api.crm.dev.jlg-technology.com";
 
     private $_strJWT;
 
@@ -73,19 +70,8 @@ class Service
         return new self($arrResponse["access_token"]);
     }
 
-    public function _uploadFile($mixedModelFiles)
+    private function _uploadPost(array $arrFiles)
     {
-        /**
-         * Get an array of the model files
-         */
-        $arrFiles = [];
-        if ($mixedModelFiles instanceof ModelFile) {
-            $arrFiles[] = $mixedModelFiles;
-
-        } else if (is_array($mixedModelFiles)) {
-            $arrFiles = $mixedModelFiles;
-        }
-
         /**
          * Set the request parameters
          */
@@ -95,7 +81,6 @@ class Service
 
         $arrHeaders = [
             "Authorization" => $this->_strJWT,
-            //"Content-Type" => "multipart/form-data",
             "Accept" => "application/json"
         ];
 
@@ -103,7 +88,6 @@ class Service
          * Format the model files into multipart form data
          */
         $arrMultipartFileData = [];
-        $arrFileData = [];
         foreach ($arrFiles as $key => $modelFile) {
             $arrMultipartFileData[] = [
                 "name" => strval($key),
@@ -112,40 +96,34 @@ class Service
                     "Content-Type" => $modelFile->getMimeType()
                 ]
             ];
-
-            $arrFileData[$key] = fopen($modelFile->getName(), "r");
         }
 
-        $guzzleClient = new GuzzleClient();
-
-        $guzzleResponse = $guzzleClient->request(
-            $strMethod,
+        /**
+         * Make the request to /upload and decode the results
+         */
+        $guzzleResponse = self::_makeRequest(
             $strUrl,
-            [
-                RequestOptions::HEADERS => $arrHeaders,
-                RequestOptions::MULTIPART => [
-                    [
-                        "name" => strval($key),
-                        "contents" => fopen($mixedModelFiles->getName(), "r")
-                    ]
-                ]
-            ]
+            $strMethod,
+            $arrHeaders,
+            $arrMultipartFileData
         );
 
-        // /**
-        //  * Make the request to /upload
-        //  */
-        // $guzzleResponse = self::_makeRequest(
-        //     $strUrl,
-        //     $strMethod,
-        //     $arrHeaders,
-        //     $arrMultipartFileData
-        //     //$arrFileData
-        // );
+        $arrResponse = self::_decodeJSONResponse($guzzleResponse);
 
-        exit(var_dump($guzzleResponse->getBody()->getContents()));
+        /**
+         * Set the upload path for each file from the results
+         */
+        foreach ($arrResponse as $key => $strGeneratedFileName) {
+            $modelFile = $arrFiles[$key];
 
-        return self::_decodeJSONResponse($guzzleResponse);
+            if ($modelFile) {
+                $modelFile->setUploadPath($strGeneratedFileName);
+
+                $arrFiles[$key] = $modelFile;
+            }
+        }
+
+        return $arrFiles;
     }
 
     private static function _makeRequest(
@@ -176,7 +154,11 @@ class Service
                     $arrOptions[RequestOptions::FORM_PARAMS] = $arrData;
                     break;
                 default:
-                    $arrOptions[RequestOptions::BODY] = $arrData;
+                    if (is_array($arrData)) {
+                        $arrOptions[RequestOptions::MULTIPART] = $arrData;
+                    } else {
+                        $arrOptions[RequestOptions::FORM_PARAMS] = $arrData;
+                    }
                     break;
             }
         }
