@@ -91,7 +91,7 @@ class Service
         foreach ($arrFiles as $key => $modelFile) {
             $arrMultipartFileData[] = [
                 "name" => strval($key),
-                "contents" => fopen($modelFile->getName(), "r"),
+                "contents" => fopen($modelFile->getNameAndPath(), "r"),
                 "headers" => [
                     "Content-Type" => $modelFile->getMimeType()
                 ]

@@ -64,6 +64,10 @@ class CompanyTest extends TestCase
         $strNotes = "Test 11";
         $arrModelFiles = [
             Mockery::mock(File::class)
+                ->shouldReceive("getCategoryId")
+                ->withNoArgs()
+                ->andReturn(File::CATEGORY_SEARCHES)
+                ->mock()
         ];
 
         $modelCompany = Company::create(
@@ -598,7 +602,11 @@ class CompanyTest extends TestCase
             $modelCompany->getFiles()
         );
 
-        $mockModelFile = Mockery::mock(File::class);
+        $mockModelFile = Mockery::mock(File::class)
+            ->shouldReceive("getCategoryId")
+            ->withNoArgs()
+            ->andReturn(File::CATEGORY_SEARCHES)
+            ->mock();
         $arrModelFiles[] = $mockModelFile;
 
         $modelCompany->addFile($mockModelFile);

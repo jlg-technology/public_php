@@ -7,7 +7,7 @@ use \Exception as Exception;
 
 class File extends AbstractModel
 {
-    const FIELD_NAME        = "Name";
+    const FIELD_NAME        = "NameAndPath";
     const FIELD_MIME_TYPE   = "MimeType";
     const FIELD_DESCRIPTION = "Description";
     const FIELD_CATEGORY_ID = "CategoryId";
@@ -23,6 +23,42 @@ class File extends AbstractModel
     const CATEGORY_MORTGAGE_REFERENCES = 33;
     const CATEGORY_VALUATION_AND_TITLE_PLANS = 34;
     const CATEGORY_AML_CHECKLIST = 49;
+
+    const CATEGORIES = [
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_GUARANTOR_DETAILS,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
+        self::CATEGORY_PROOF_OF_INCOME,
+        self::CATEGORY_COMPANY_ACCOUNTS,
+        self::CATEGORY_MORTGAGE_REFERENCES,
+        self::CATEGORY_VALUATION_AND_TITLE_PLANS,
+        self::CATEGORY_AML_CHECKLIST
+    ];
+
+    // A company's file must have one of these categories
+    const COMPANY_CATEGORIES = [
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_COMPANY_ACCOUNTS,
+        self::CATEGORY_MORTGAGE_REFERENCES,
+        self::CATEGORY_VALUATION_AND_TITLE_PLANS,
+        self::CATEGORY_AML_CHECKLIST
+    ];
+
+    // A person's file must have one of these categories
+    const PERSON_CATEGORIES = [
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_GUARANTOR_DETAILS,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
+        self::CATEGORY_PROOF_OF_INCOME,
+        self::CATEGORY_MORTGAGE_REFERENCES,
+        self::CATEGORY_VALUATION_AND_TITLE_PLANS
+    ];
 
     public static function create(
         string $strName,
@@ -43,7 +79,7 @@ class File extends AbstractModel
             throw new Exception("'$strName' is not readable");
         }
 
-        if (!in_array($intCategoryId, self::getCategoryIds())) {
+        if (!in_array($intCategoryId, self::CATEGORIES)) {
             throw new Exception("'$intCategoryId' is not a valid category Id");
         }
 
@@ -71,52 +107,7 @@ class File extends AbstractModel
         ];
     }
 
-    public static function getCategoryIds() : array
-    {
-        return [
-            self::CATEGORY_SEARCHES,
-            self::CATEGORY_GUARANTOR_DETAILS,
-            self::CATEGORY_OTHER,
-            self::CATEGORY_BANK_STATEMENTS,
-            self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
-            self::CATEGORY_PROOF_OF_INCOME,
-            self::CATEGORY_COMPANY_ACCOUNTS,
-            self::CATEGORY_MORTGAGE_REFERENCES,
-            self::CATEGORY_VALUATION_AND_TITLE_PLANS,
-            self::CATEGORY_AML_CHECKLIST
-        ];
-    }
-
-    // A company's file must have one of these categories
-    public static function getCompanyCategoryIds() : array
-    {
-        return [
-            self::CATEGORY_SEARCHES,
-            self::CATEGORY_OTHER,
-            self::CATEGORY_BANK_STATEMENTS,
-            self::CATEGORY_COMPANY_ACCOUNTS,
-            self::CATEGORY_MORTGAGE_REFERENCES,
-            self::CATEGORY_VALUATION_AND_TITLE_PLANS,
-            self::CATEGORY_AML_CHECKLIST
-        ];
-    }
-
-    // A person's file must have one of these categories
-    public static function getPersonCategoryIds() : array
-    {
-        return [
-            self::CATEGORY_SEARCHES,
-            self::CATEGORY_GUARANTOR_DETAILS,
-            self::CATEGORY_OTHER,
-            self::CATEGORY_BANK_STATEMENTS,
-            self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
-            self::CATEGORY_PROOF_OF_INCOME,
-            self::CATEGORY_MORTGAGE_REFERENCES,
-            self::CATEGORY_VALUATION_AND_TITLE_PLANS
-        ];
-    }
-
-    public function getName() : string
+    public function getNameAndPath() : string
     {
         return $this->_getField(self::FIELD_NAME);
     }

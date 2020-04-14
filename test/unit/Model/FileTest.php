@@ -43,7 +43,7 @@ class FileTest extends TestCase
     {
         $this->assertEquals(
             [
-                "Name",
+                "NameAndPath",
                 "MimeType",
                 "Description",
                 "CategoryId",
@@ -69,7 +69,7 @@ class FileTest extends TestCase
 
         $this->assertEquals(
             $strName,
-            $modelFile->getName()
+            $modelFile->getNameAndPath()
         );
 
         $this->assertEquals(
