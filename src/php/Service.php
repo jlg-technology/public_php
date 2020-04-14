@@ -147,12 +147,6 @@ class Service
                 case "application/json":
                     $arrOptions[RequestOptions::JSON] = $mixedData;
                     break;
-                case "multipart/form-data":
-                    $arrOptions[RequestOptions::MULTIPART] = $mixedData;
-                    break;
-                case "application/x-www-form-urlencoded":
-                    $arrOptions[RequestOptions::FORM_PARAMS] = $mixedData;
-                    break;
                 default:
                     if (is_array($mixedData)) {
                         $arrOptions[RequestOptions::MULTIPART] = $mixedData;
