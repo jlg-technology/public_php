@@ -85,7 +85,14 @@ class Company extends AbstractModel
             !is_null($intLegalStatus) &&
             !in_array(
                 $intLegalStatus,
-                self::getLegalStatuses()
+                [
+                    self::LEGAL_STATUS_SOLE_TRADER,
+                    self::LEGAL_STATUS_LIMITED_LIABILITY_PARTNERSHIP,
+                    self::LEGAL_STATUS_ORDINARY_PARTNERSHIP,
+                    self::LEGAL_STATUS_LIMITED_COMPANY,
+                    self::LEGAL_STATUS_PUBLIC_LIMITED_COMPANY,
+                    self::LEGAL_STATUS_CHARITY
+                ]
             )
         ) {
             throw new Exception(
@@ -136,6 +143,17 @@ class Company extends AbstractModel
                         "An element of the file array is not a file model - " . 
                             "element is at positon $key with value " . 
                             print_r($modelFile, true)
+                    );
+                } else if (
+                    !in_array(
+                        $modelFile->getCategoryId(), 
+                        File::COMPANY_CATEGORIES
+                    )
+                ) {
+                    throw new Exception(
+                        "'" . $modelFile->getCategoryId() . "' " . 
+                            "on file '" . $modelFile->getNameAndPath() . "' " .
+                            "is not a valid company category"
                     );
                 }
             }
@@ -215,18 +233,6 @@ class Company extends AbstractModel
             self::FIELD_WEBSITE,
             self::FIELD_NOTES,
             self::FIELD_FILES
-        ];
-    }
-
-    public static function getLegalStatuses() : array
-    {
-        return [
-            self::LEGAL_STATUS_SOLE_TRADER,
-            self::LEGAL_STATUS_LIMITED_LIABILITY_PARTNERSHIP,
-            self::LEGAL_STATUS_ORDINARY_PARTNERSHIP,
-            self::LEGAL_STATUS_LIMITED_COMPANY,
-            self::LEGAL_STATUS_PUBLIC_LIMITED_COMPANY,
-            self::LEGAL_STATUS_CHARITY
         ];
     }
 
@@ -350,6 +356,18 @@ class Company extends AbstractModel
 
     public function addFile(File $modelFile) : self
     {
+        if (
+            !in_array(
+                $modelFile->getCategoryId(), 
+                File::COMPANY_CATEGORIES
+            )
+        ) {
+            throw new Exception(
+                "'" . $modelFile->getCategoryId() . "' " .
+                    "is not a valid company file category"
+            );
+        }
+
         $arrModelFiles = $this->_getField(self::FIELD_FILES, []);
 
         $arrModelFiles[] = $modelFile;

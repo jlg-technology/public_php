@@ -24,6 +24,42 @@ class File extends AbstractModel
     const CATEGORY_VALUATION_AND_TITLE_PLANS = 34;
     const CATEGORY_AML_CHECKLIST = 49;
 
+    const CATEGORIES = [
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_GUARANTOR_DETAILS,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
+        self::CATEGORY_PROOF_OF_INCOME,
+        self::CATEGORY_COMPANY_ACCOUNTS,
+        self::CATEGORY_MORTGAGE_REFERENCES,
+        self::CATEGORY_VALUATION_AND_TITLE_PLANS,
+        self::CATEGORY_AML_CHECKLIST
+    ];
+
+    // A company's file must have one of these categories
+    const COMPANY_CATEGORIES = [
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_COMPANY_ACCOUNTS,
+        self::CATEGORY_MORTGAGE_REFERENCES,
+        self::CATEGORY_VALUATION_AND_TITLE_PLANS,
+        self::CATEGORY_AML_CHECKLIST
+    ];
+
+    // A person's file must have one of these categories
+    const PERSON_CATEGORIES = [
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_GUARANTOR_DETAILS,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
+        self::CATEGORY_PROOF_OF_INCOME,
+        self::CATEGORY_MORTGAGE_REFERENCES,
+        self::CATEGORY_VALUATION_AND_TITLE_PLANS
+    ];
+
     public static function create(
         string $strName,
         string $strMimeType,
@@ -43,7 +79,7 @@ class File extends AbstractModel
             throw new Exception("'$strName' is not readable");
         }
 
-        if (!in_array($intCategoryId, self::getCategoryIds())) {
+        if (!in_array($intCategoryId, self::CATEGORIES)) {
             throw new Exception("'$intCategoryId' is not a valid category Id");
         }
 
@@ -68,51 +104,6 @@ class File extends AbstractModel
             self::FIELD_DESCRIPTION,
             self::FIELD_CATEGORY_ID,
             self::FIELD_UPLOAD_PATH
-        ];
-    }
-
-    public static function getCategoryIds() : array
-    {
-        return [
-            self::CATEGORY_SEARCHES,
-            self::CATEGORY_GUARANTOR_DETAILS,
-            self::CATEGORY_OTHER,
-            self::CATEGORY_BANK_STATEMENTS,
-            self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
-            self::CATEGORY_PROOF_OF_INCOME,
-            self::CATEGORY_COMPANY_ACCOUNTS,
-            self::CATEGORY_MORTGAGE_REFERENCES,
-            self::CATEGORY_VALUATION_AND_TITLE_PLANS,
-            self::CATEGORY_AML_CHECKLIST
-        ];
-    }
-
-    // A company's file must have one of these categories
-    public static function getCompanyCategoryIds() : array
-    {
-        return [
-            self::CATEGORY_SEARCHES,
-            self::CATEGORY_OTHER,
-            self::CATEGORY_BANK_STATEMENTS,
-            self::CATEGORY_COMPANY_ACCOUNTS,
-            self::CATEGORY_MORTGAGE_REFERENCES,
-            self::CATEGORY_VALUATION_AND_TITLE_PLANS,
-            self::CATEGORY_AML_CHECKLIST
-        ];
-    }
-
-    // A person's file must have one of these categories
-    public static function getPersonCategoryIds() : array
-    {
-        return [
-            self::CATEGORY_SEARCHES,
-            self::CATEGORY_GUARANTOR_DETAILS,
-            self::CATEGORY_OTHER,
-            self::CATEGORY_BANK_STATEMENTS,
-            self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
-            self::CATEGORY_PROOF_OF_INCOME,
-            self::CATEGORY_MORTGAGE_REFERENCES,
-            self::CATEGORY_VALUATION_AND_TITLE_PLANS
         ];
     }
 
