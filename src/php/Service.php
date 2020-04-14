@@ -95,7 +95,7 @@ class Service
 
         $arrHeaders = [
             "Authorization" => $this->_strJWT,
-            "Content-Type" => "multipart/form-data",
+            //"Content-Type" => "multipart/form-data",
             "Accept" => "application/json"
         ];
 
@@ -116,16 +116,33 @@ class Service
             $arrFileData[$key] = fopen($modelFile->getName(), "r");
         }
 
-        /**
-         * Make the request to /upload
-         */
-        $guzzleResponse = self::_makeRequest(
-            $strUrl,
+        $guzzleClient = new GuzzleClient();
+
+        $guzzleResponse = $guzzleClient->request(
             $strMethod,
-            $arrHeaders,
-            $arrMultipartFileData
-            //$arrFileData
+            $strUrl,
+            [
+                RequestOptions::HEADERS => $arrHeaders,
+                RequestOptions::MULTIPART => [
+                    "name" => strval($key),
+                    "contents" => fopen($mixedModelFiles->getName(), "r"),
+                    "headers" => [
+                        "Content-Type" => $mixedModelFiles->getMimeType()
+                    ]
+                ]
+            ]
         );
+
+        // /**
+        //  * Make the request to /upload
+        //  */
+        // $guzzleResponse = self::_makeRequest(
+        //     $strUrl,
+        //     $strMethod,
+        //     $arrHeaders,
+        //     $arrMultipartFileData
+        //     //$arrFileData
+        // );
 
         exit(var_dump($guzzleResponse->getBody()->getContents()));
 
@@ -160,7 +177,7 @@ class Service
                     $arrOptions[RequestOptions::FORM_PARAMS] = $arrData;
                     break;
                 default:
-                    $arrOptions[RequestOptions::FORM_PARAMS] = $arrData;
+                    $arrOptions[RequestOptions::BODY] = $arrData;
                     break;
             }
         }
