@@ -108,23 +108,37 @@ class Service
             );
 
         } catch (ClientException $ex) {
+            $strReasonPhrase = "Empty response returned";
+            $intStatusCode = 400;
+            if (!is_null($guzzleResponse = $ex->getResponse())) {
+                $strReasonPhrase = $guzzleResponse->getReasonPhrase();
+                $intStatusCode = $guzzleResponse->getStatusCode();
+            }
+
             throw new Exception(
                 sprintf(
                     "Client error returned from %s (%s)",
                     $strUrl,
-                    $ex->getResponse()->getReasonPhrase()
+                    $strReasonPhrase
                 ), 
-                $ex->getResponse()->getStatusCode()
+                $intStatusCode
             );
 
         } catch (ServerException $ex) {
+            $strReasonPhrase = "Empty response returned";
+            $intStatusCode = 500;
+            if (!is_null($guzzleResponse = $ex->getResponse())) {
+                $strReasonPhrase = $guzzleResponse->getReasonPhrase();
+                $intStatusCode = $guzzleResponse->getStatusCode();
+            }
+
             throw new Exception(
                 sprintf(
                     "Server error returned from %s (%s)",
                     $strUrl,
-                    $ex->getResponse()->getReasonPhrase()
+                    $strReasonPhrase
                 ), 
-                $ex->getResponse()->getStatusCode()
+                $intStatusCode
             );
         }
 
