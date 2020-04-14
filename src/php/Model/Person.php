@@ -211,7 +211,19 @@ class Person extends AbstractModel
 
     public function getDateOfBirth() : DateTime
     {
-        return $this->_getField(self::FIELD_DOB);
+        $datetimeIncorporationDate = DateTime::createFromFormat(
+            self::DATE_OF_BIRTH_FORMAT,
+            $this->_getField(self::FIELD_DOB)
+        );
+
+        if ($datetimeIncorporationDate === false) {
+            throw new Exception(
+                "An error occured when retriving date of birth - is " . 
+                    print_r($this->_getField(self::FIELD_DOB), true)
+            );
+        }
+
+        return $datetimeIncorporationDate;
     }
 
     public function getGender() : int

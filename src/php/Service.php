@@ -3,7 +3,9 @@
 namespace jlgtechnology;
 
 use jlgtechnology\model\{
-    File as ModelFile
+    File as ModelFile,
+    Person as ModelPerson,
+    Company as ModelCompany
 };
 
 use GuzzleHttp\{
@@ -90,9 +92,9 @@ class Service
         $arrMultipartFileData = [];
         foreach ($arrFiles as $key => $modelFile) {
             $arrMultipartFileData[] = [
-                "name" => strval($key),
+                "name"     => strval($key),
                 "contents" => fopen($modelFile->getNameAndPath(), "r"),
-                "headers" => [
+                "headers"  => [
                     "Content-Type" => $modelFile->getMimeType()
                 ]
             ];
@@ -126,6 +128,103 @@ class Service
         return $arrFiles;
     }
 
+    private function _casePost(
+        ModelCompany $modelPrimaryCompany,
+        array $arrModelPersons,
+        array $arrModelCompanies
+    ) : int
+    {
+        /**
+         * Format the primary company data
+         */
+        $arrPrimaryData = $this->_getCompanyData($modelPrimaryCompany);
+
+        /**
+         * Format the entity person data
+         */
+        $arrEntityPersonData = [];
+        foreach ($arrModelPersons as $modelPerson) {
+            /**
+             * Format the model files on this person
+             */
+            $arrFiles = [];
+            foreach ($modelPerson->getFiles() as $modelFile) {
+                $arrFiles[] = $this->_getFileData($modelFile);
+            }
+
+            /**
+             * Format the model person data
+             */
+            $arrEntityPersonData[] = [
+                "Title"       => $modelPerson->getTitle(),
+                "Forename"    => $modelPerson->getForename(),
+                "MiddleName"  => $modelPerson->getMiddleName(),
+                "Surname"     => $modelPerson->getSurname(),
+                "DOB"         => $modelPerson->getDateOfBirth(),
+                "AddressText" => implode(
+                    ' ',
+                    [
+                        $modelPerson->getAddressLine1(),
+                        $modelPerson->getAddressLine2(),
+                        $modelPerson->getAddressLine3(),
+                        $modelPerson->getAddressLine4()
+                    ]
+                ),
+                "Postcode"    => $modelPerson->getAddressPostcode(),
+                "DayPhone"    => $modelPerson->getDayPhone(),
+                "MobilePhone" => $modelPerson->getMobilePhone(),
+                "Email"       => $modelPerson->getEmail(),
+                "Notes"       => $modelPerson->getNotes(),
+                "Position"    => $modelPerson->getPosition(),
+                "Gender"      => $modelPerson->getGender(),
+                "Files"       => $arrFiles
+            ];
+        }
+
+        /**
+         * Format the entity company data
+         */
+        $arrEntityCompanyData = [];
+        foreach ($arrModelCompanies as $modelCompany) {
+            $arrEntityCompanyData[] = $this->_getCompanyData($modelCompany);
+        }
+
+        $strUrl = self::CRM_API_URL;
+
+        $strMethod = "POST";
+
+        $arrHeaders = [
+            "Authorization" => $this->_strJWT,
+            "Content-Type"  => "application/json",
+            "Accept"        => "application/json"
+        ];
+
+        $arrData = [
+            "Primary"  => $this->_getCompanyData($modelPrimaryCompany),
+            "Entities" => array_merge(
+                $arrEntityPersonData,
+                $arrEntityCompanyData
+            ),
+            "Loan"     => []
+        ];
+
+        /**
+         * Make the case post request and decode the response
+         */
+        $guzzleResponse = self::_makeRequest(
+            $strUrl,
+            $strMethod,
+            $arrHeaders,
+            $arrData
+        );
+        $arrResponse = self::_decodeJSONResponse($guzzleResponse);
+
+        /**
+         * Return the case pk of the created case
+         */
+        return $arrResponse["CasePK"];
+    }
+
     private static function _makeRequest(
         string $strUrl,
         string $strMethod,
@@ -139,9 +238,6 @@ class Service
             $arrOptions[RequestOptions::HEADERS] = $arrHeaders;
         }
 
-        /**
-         * The content type of the data must be specified in the headers
-         */
         if ($mixedData) {
             switch ($arrHeaders["Content-Type"] ?? null) {
                 case "application/json":
@@ -229,5 +325,50 @@ class Service
         }
 
         return $arrResponse;
+    }
+
+    private function _getCompanyData(ModelCompany $modelCompany) 
+    {
+        $arrFileData = [];
+        foreach ($modelCompany->getFiles() as $modelFile) {
+            $arrFileData[] = $this->_getFileData($modelFile);
+        }
+
+        return [
+            "CompanyName"               => $modelCompany->getName(),
+            "LegalStatus"               => $modelCompany->getLegalStatus(),
+            "TradingAddressLine1"       => $modelCompany->getTradingAddressLine1(),
+            "TradingAddressLine2"       => $modelCompany->getTradingAddressLine2(),
+            "TradingAddressLine3"       => $modelCompany->getTradingAddressLine3(),
+            "TradingAddressLine4"       => $modelCompany->getTradingAddressLine4(),
+            "TradingAddressPostcode"    => $modelCompany->getTradingAddressPostcode(),    
+            "RegisteredAddressLine1"    => $modelCompany->getRegisteredAddressLine1(),    
+            "RegisteredAddressLine2"    => $modelCompany->getRegisteredAddressLine2(),    
+            "RegisteredAddressLine3"    => $modelCompany->getRegisteredAddressLine3(),    
+            "RegisteredAddressLine4"    => $modelCompany->getRegisteredAddressLine4(),    
+            "RegisteredAddressPostcode" => $modelCompany->getRegisteredAddressPostcode(),    
+            "Telephone"                 => $modelCompany->getTelephone(),
+            "Email"                     => $modelCompany->getEmail(),
+            "Website"                   => $modelCompany->getWebsite(),
+            "Notes"                     => $modelCompany->getNotes(),
+            "IncorporationDate"         => $modelCompany->getIncorporationDate(),
+            "CompanyRegistrationNo"     => $modelCompany->getCompanyRegistrationNumber(),
+            "SicCodes"                  => $modelCompany->getSicCodes(),
+            "Files"                     => $arrFileData
+        ];
+    }
+
+    private function _getFileData(ModelFile $modelFile)
+    {
+        return [
+            "FileName"          => pathinfo(
+                $modelFile->getNameAndPath(), 
+                PATHINFO_FILENAME
+            ),
+            "GeneratedFileName" => $modelFile->getUploadPath(),
+            "Description"       => $modelFile->getDescription(),
+            "CategoryID"        => $modelFile->getCategoryId(),
+            "MimeType"          => $modelFile->getMimeType()
+        ];
     }
 }
