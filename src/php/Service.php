@@ -124,10 +124,9 @@ class Service
             [
                 RequestOptions::HEADERS => $arrHeaders,
                 RequestOptions::MULTIPART => [
-                    "name" => strval($key),
-                    "contents" => fopen($mixedModelFiles->getName(), "r"),
-                    "headers" => [
-                        "Content-Type" => $mixedModelFiles->getMimeType()
+                    [
+                        "name" => strval($key),
+                        "contents" => fopen($mixedModelFiles->getName(), "r")
                     ]
                 ]
             ]
