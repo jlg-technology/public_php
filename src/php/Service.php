@@ -5,7 +5,8 @@ namespace jlgtechnology;
 use jlgtechnology\model\{
     File as ModelFile,
     Person as ModelPerson,
-    Company as ModelCompany
+    Company as ModelCompany,
+    Loan as ModelLoan
 };
 
 use GuzzleHttp\{
@@ -130,6 +131,7 @@ class Service
 
     private function _casePost(
         ModelCompany $modelPrimaryCompany,
+        ModelLoan $modelLoan,
         array $arrModelPersons,
         array $arrModelCompanies
     ) : int
@@ -138,6 +140,11 @@ class Service
          * Format the primary company data
          */
         $arrPrimaryData = $this->_getCompanyData($modelPrimaryCompany);
+
+        $arrLoanData = [
+            "FacilityAmountRequested" => $modelLoan->getAmount(),
+            "FacilityUse"             => $modelLoan->getUse()
+        ];
 
         /**
          * Format the entity person data
@@ -201,11 +208,11 @@ class Service
 
         $arrData = [
             "Primary"  => $this->_getCompanyData($modelPrimaryCompany),
+            "Loan"     => $arrLoanData,
             "Entities" => array_merge(
                 $arrEntityPersonData,
                 $arrEntityCompanyData
-            ),
-            "Loan"     => []
+            )
         ];
 
         /**
