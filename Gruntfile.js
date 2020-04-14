@@ -63,12 +63,20 @@ module.exports = function(grunt) {
                     logJunit: "reports/unit.xml",
                     testdoxHtml: "reports/testdox.html"
                 },
-                test: {
+                unit: {
                     options: {
-                        configuration: "test/phpunit/coverage.xml"
+                        configuration: "test/unit/coverage.xml"
                     },
                     files: {
-                        testFolder: "test/phpunit"
+                        testFolder: "test/unit"
+                    }
+                },
+                functional: {
+                    options: {
+                        configuration: "test/functional/coverage.xml"
+                    },
+                    files: {
+                        testFolder: "test/functional"
                     }
                 }
             }
@@ -91,7 +99,7 @@ module.exports = function(grunt) {
             "phpcs",
             "phpcsfixer",
             "exec:phpstan",
-            "phpunit-runner:test"
+            "phpunit-runner:unit"
         ]
     );
 
@@ -113,7 +121,22 @@ module.exports = function(grunt) {
     grunt.registerTask(
         "phpunit",
         [
-            "phpunit-runner:test"
+            "phpunit-runner:unit",
+            "phpunit-runner:functional"
+        ]
+    );
+
+    grunt.registerTask(
+        "phpunit-unit",
+        [
+            "phpunit-runner:unit"
+        ]
+    );
+
+    grunt.registerTask(
+        "phpunit-functional",
+        [
+            "phpunit-runner:functional"
         ]
     );
 
