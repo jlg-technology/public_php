@@ -130,7 +130,7 @@ class Service
         string $strUrl,
         string $strMethod,
         array $arrHeaders = [],
-        array $arrData = []
+        $mixedData = null
     ) : ResponseInterface
     {
         $arrOptions = [];
@@ -142,22 +142,22 @@ class Service
         /**
          * The content type of the data must be specified in the headers
          */
-        if ($arrData) {
+        if ($mixedData) {
             switch ($arrHeaders["Content-Type"] ?? null) {
                 case "application/json":
-                    $arrOptions[RequestOptions::JSON] = $arrData;
+                    $arrOptions[RequestOptions::JSON] = $mixedData;
                     break;
                 case "multipart/form-data":
-                    $arrOptions[RequestOptions::MULTIPART] = $arrData;
+                    $arrOptions[RequestOptions::MULTIPART] = $mixedData;
                     break;
                 case "application/x-www-form-urlencoded":
-                    $arrOptions[RequestOptions::FORM_PARAMS] = $arrData;
+                    $arrOptions[RequestOptions::FORM_PARAMS] = $mixedData;
                     break;
                 default:
-                    if (is_array($arrData)) {
-                        $arrOptions[RequestOptions::MULTIPART] = $arrData;
+                    if (is_array($mixedData)) {
+                        $arrOptions[RequestOptions::MULTIPART] = $mixedData;
                     } else {
-                        $arrOptions[RequestOptions::FORM_PARAMS] = $arrData;
+                        $arrOptions[RequestOptions::FORM_PARAMS] = $mixedData;
                     }
                     break;
             }
