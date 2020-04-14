@@ -2,12 +2,16 @@
 
 namespace jlgtechnology;
 
-use GuzzleHttp\{
-    Client as GuzzleClient,
-    RequestOptions as GuzzleRequestOptions
+use jlgtechnology\model\{
+    File as ModelFile
 };
 
-use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use GuzzleHttp\{
+    Client as GuzzleClient,
+    RequestOptions
+};
+
+use Psr\Http\Message\ResponseInterface;
 
 use GuzzleHttp\Exception\{
     ClientException,
@@ -66,36 +70,91 @@ class Service
         return new self($arrResponse["access_token"]);
     }
 
+    private function _uploadPost(array $arrFiles)
+    {
+        /**
+         * Set the request parameters
+         */
+        $strUrl = self::CRM_API_URL . "/upload";
+
+        $strMethod = "POST";
+
+        $arrHeaders = [
+            "Authorization" => $this->_strJWT,
+            "Accept" => "application/json"
+        ];
+
+        /**
+         * Format the model files into multipart form data
+         */
+        $arrMultipartFileData = [];
+        foreach ($arrFiles as $key => $modelFile) {
+            $arrMultipartFileData[] = [
+                "name" => strval($key),
+                "contents" => fopen($modelFile->getName(), "r"),
+                "headers" => [
+                    "Content-Type" => $modelFile->getMimeType()
+                ]
+            ];
+        }
+
+        /**
+         * Make the request to /upload and decode the results
+         */
+        $guzzleResponse = self::_makeRequest(
+            $strUrl,
+            $strMethod,
+            $arrHeaders,
+            $arrMultipartFileData
+        );
+
+        $arrResponse = self::_decodeJSONResponse($guzzleResponse);
+
+        /**
+         * Set the upload path for each file from the results
+         */
+        foreach ($arrResponse as $key => $strGeneratedFileName) {
+            $modelFile = $arrFiles[$key];
+
+            if ($modelFile) {
+                $modelFile->setUploadPath($strGeneratedFileName);
+
+                $arrFiles[$key] = $modelFile;
+            }
+        }
+
+        return $arrFiles;
+    }
+
     private static function _makeRequest(
         string $strUrl,
         string $strMethod,
         array $arrHeaders = [],
-        array $arrData = []
-    ) : GuzzleResponse
+        $mixedData = null
+    ) : ResponseInterface
     {
         $arrOptions = [];
 
         if ($arrHeaders) {
-            $arrOptions[GuzzleRequestOptions::HEADERS] = $arrHeaders;
+            $arrOptions[RequestOptions::HEADERS] = $arrHeaders;
         }
 
         /**
-         * If the content-type is json then we need to set it specially
+         * The content type of the data must be specified in the headers
          */
-        if (
-            $arrData &&
-            $arrHeaders && 
-            (
-                in_array("Content-Type: application/json", $arrHeaders) ||
-                (
-                    array_key_exists("Content-Type", $arrHeaders) && 
-                    $arrHeaders["Content-Type"] === "application/json"
-                )
-            )
-        ) {
-            $arrOptions[GuzzleRequestOptions::JSON] = $arrData;
-        } else {
-            $arrOptions[GuzzleRequestOptions::FORM_PARAMS] = $arrData;
+        if ($mixedData) {
+            switch ($arrHeaders["Content-Type"] ?? null) {
+                case "application/json":
+                    $arrOptions[RequestOptions::JSON] = $mixedData;
+                    break;
+                default:
+                    if (is_array($mixedData)) {
+                        $arrOptions[RequestOptions::MULTIPART] = $mixedData;
+                    } else {
+                        $arrOptions[RequestOptions::FORM_PARAMS] = $mixedData;
+                    }
+                    break;
+            }
         }
 
         $guzzleClient = new GuzzleClient();
@@ -110,7 +169,8 @@ class Service
         } catch (ClientException $ex) {
             $strReasonPhrase = "Empty response returned";
             $intStatusCode = 400;
-            if (!is_null($guzzleResponse = $ex->getResponse())) {
+            $guzzleResponse = $ex->getResponse();
+            if (!is_null($guzzleResponse)) {
                 $strReasonPhrase = $guzzleResponse->getReasonPhrase();
                 $intStatusCode = $guzzleResponse->getStatusCode();
             }
@@ -127,7 +187,8 @@ class Service
         } catch (ServerException $ex) {
             $strReasonPhrase = "Empty response returned";
             $intStatusCode = 500;
-            if (!is_null($guzzleResponse = $ex->getResponse())) {
+            $guzzleResponse = $ex->getResponse();
+            if (!is_null($guzzleResponse)) {
                 $strReasonPhrase = $guzzleResponse->getReasonPhrase();
                 $intStatusCode = $guzzleResponse->getStatusCode();
             }
@@ -146,16 +207,15 @@ class Service
     }
 
     private static function _decodeJSONResponse(
-        GuzzleResponse $guzzleResponse
+        ResponseInterface $guzzleResponse
     ) : array
     {        
         $objBody = $guzzleResponse->getBody();
 
         /**
-         * Rewind the body contents to the start
+         * Rewind the body contents to the start and read them
          */
         $objBody->seek(0);
-
         $arrResponse = json_decode($objBody->getContents(), true);
 
         /**
