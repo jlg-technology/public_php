@@ -7,7 +7,7 @@ use \Exception as Exception;
 
 class File extends AbstractModel
 {
-    const FIELD_NAME        = "Name";
+    const FIELD_NAME        = "NameAndPath";
     const FIELD_MIME_TYPE   = "MimeType";
     const FIELD_DESCRIPTION = "Description";
     const FIELD_CATEGORY_ID = "CategoryId";
@@ -116,7 +116,7 @@ class File extends AbstractModel
         ];
     }
 
-    public function getName() : string
+    public function getNameAndPath() : string
     {
         return $this->_getField(self::FIELD_NAME);
     }
