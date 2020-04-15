@@ -28,6 +28,7 @@ class Company extends AbstractModel
     const FIELD_EMAIL                       = "Email";
     const FIELD_WEBSITE                     = "Website";
     const FIELD_NOTES                       = "Notes";
+    const FIELD_POSITION                    = "Position";
     const FIELD_FILES                       = "Files";
 
     const LEGAL_STATUS_SOLE_TRADER = 0;
@@ -36,6 +37,11 @@ class Company extends AbstractModel
     const LEGAL_STATUS_LIMITED_COMPANY = 3;
     const LEGAL_STATUS_PUBLIC_LIMITED_COMPANY = 4;
     const LEGAL_STATUS_CHARITY = 5;
+
+    const POSITION_DIRECTOR_BIT   = 1;
+    const POSITION_GUARANTOR_BIT  = 2;
+    const POSITION_PSC_BIT        = 4;
+    const POSITION_NO_CONTACT_BIT = 8;
 
     const COMPANY_REGISTRATION_NUMBER_REGEX = 
         "/^(([0-9]{8})|([A-Z]{2}[0-9]{6})|(R[0-9]{7}))$/i";
@@ -73,6 +79,7 @@ class Company extends AbstractModel
         ?string $strEmail,
         ?string $strWebsite,
         ?string $strNotes,
+        ?int $intPosition,
         ?array $arrModelFiles
     ) : self
     {
@@ -147,6 +154,21 @@ class Company extends AbstractModel
             );
         }
 
+        if (
+            !is_null($intPosition) &&
+            (
+                $intPosition < 0 ||
+                $intPosition > (
+                    self::POSITION_DIRECTOR_BIT + 
+                    self::POSITION_GUARANTOR_BIT +
+                    self::POSITION_PSC_BIT +
+                    self::POSITION_NO_CONTACT_BIT
+                )
+            )
+        ) {
+            throw new Exception("'$intPosition' is not a valid position");
+        }
+
         if (!is_null($arrModelFiles)) {
             foreach ($arrModelFiles as $key => $modelFile) {
                 if (!($modelFile instanceof File)) {
@@ -212,6 +234,8 @@ class Company extends AbstractModel
                     $strWebsite,
                 self::FIELD_NOTES                       => 
                     $strNotes,
+                self::FIELD_POSITION                    =>
+                    $intPosition,
                 self::FIELD_FILES                       => 
                     $arrModelFiles
             ]
@@ -243,6 +267,7 @@ class Company extends AbstractModel
             self::FIELD_EMAIL,
             self::FIELD_WEBSITE,
             self::FIELD_NOTES,
+            self::FIELD_POSITION,
             self::FIELD_FILES
         ];
     }
@@ -358,6 +383,11 @@ class Company extends AbstractModel
     public function getNotes() : string
     {
         return $this->_getField(self::FIELD_NOTES, "");
+    }
+
+    public function getPosition() : int
+    {
+        return $this->_getField(self::FIELD_POSITION, 0);
     }
 
     public function getFiles() : array
