@@ -9,23 +9,24 @@ use \Exception as Exception;
 
 class Person extends AbstractModel
 {
-    const FIELD_FORENAME         = "Forename";
-    const FIELD_MIDDLENAME       = "MiddleName";
-    const FIELD_SURNAME          = "Surname";
-    const FIELD_DOB              = "DoB";
-    const FIELD_GENDER           = "Gender";
-    const FIELD_TITLE            = "Title";
-    const FIELD_ADDRESS_LINE_1   = "Address1";
-    const FIELD_ADDRESS_LINE_2   = "Address2";
-    const FIELD_ADDRESS_LINE_3   = "Address3";
-    const FIELD_ADDRESS_LINE_4   = "Address4";
-    const FIELD_ADDRESS_POSTCODE = "AddressPostcode";
-    const FIELD_DAY_PHONE        = "DayPhone";
-    const FIELD_MOBILE_PHONE     = "MobilePhone";
-    const FIELD_EMAIL            = "Email";
-    const FIELD_NOTES            = "Notes";
-    const FIELD_POSITION         = "Position";
-    const FIELD_FILES            = "Files";
+    const FIELD_FORENAME           = "Forename";
+    const FIELD_MIDDLENAME         = "MiddleName";
+    const FIELD_SURNAME            = "Surname";
+    const FIELD_DOB                = "DoB";
+    const FIELD_GENDER             = "Gender";
+    const FIELD_TITLE              = "Title";
+    const FIELD_ADDRESS_LINE_1     = "Address1";
+    const FIELD_ADDRESS_LINE_2     = "Address2";
+    const FIELD_ADDRESS_LINE_3     = "Address3";
+    const FIELD_ADDRESS_LINE_4     = "Address4";
+    const FIELD_ADDRESS_POSTCODE   = "AddressPostcode";
+    const FIELD_DAY_PHONE          = "DayPhone";
+    const FIELD_MOBILE_PHONE       = "MobilePhone";
+    const FIELD_EMAIL              = "Email";
+    const FIELD_NOTES              = "Notes";
+    const FIELD_POSITION           = "Position";
+    const FIELD_IS_PRIMARY_CONTACT = "PrimaryContact";
+    const FIELD_FILES              = "Files";
 
     const TITLE_MR   = "Mr";
     const TITLE_MRS  = "Mrs";
@@ -38,8 +39,8 @@ class Person extends AbstractModel
     const POSITION_PSC_BIT        = 4;
     const POSITION_NO_CONTACT_BIT = 8;
 
-    const GENDER_FEMALE = 0;
-    const GENDER_MALE   = 1;
+    const GENDER_MALE   = 0;
+    const GENDER_FEMALE = 1;
 
     const DATE_OF_BIRTH_FORMAT = "Y-m-d H:i:s";
 
@@ -66,6 +67,7 @@ class Person extends AbstractModel
         ?string $strEmail,
         ?string $strNotes,
         ?int $intPosition,
+        ?bool $boolPrimaryContact,
         ?array $arrModelFiles
     ) : self
     {
@@ -146,24 +148,25 @@ class Person extends AbstractModel
 
         return new self(
             [
-                self::FIELD_FORENAME         => $strForename,
-                self::FIELD_MIDDLENAME       => $strMiddleName,
-                self::FIELD_SURNAME          => $strSurname,
-                self::FIELD_DOB              => 
-                    $datetimeDateOfBirth->format(self::DATE_OF_BIRTH_FORMAT),
-                self::FIELD_GENDER           => $intGender,
-                self::FIELD_TITLE            => $strTitle,
-                self::FIELD_ADDRESS_LINE_1   => $strAddressOne,
-                self::FIELD_ADDRESS_LINE_2   => $strAddressTwo,
-                self::FIELD_ADDRESS_LINE_3   => $strAddressThree,
-                self::FIELD_ADDRESS_LINE_4   => $strAddressFour,
-                self::FIELD_ADDRESS_POSTCODE => $strAddressPostcode,
-                self::FIELD_DAY_PHONE        => $strDayPhone,
-                self::FIELD_MOBILE_PHONE     => $strMobilePhone,
-                self::FIELD_EMAIL            => $strEmail,
-                self::FIELD_NOTES            => $strNotes,
-                self::FIELD_POSITION         => $intPosition,
-                self::FIELD_FILES            => $arrModelFiles
+                self::FIELD_FORENAME           => $strForename,
+                self::FIELD_MIDDLENAME         => $strMiddleName,
+                self::FIELD_SURNAME            => $strSurname,
+                self::FIELD_DOB                => $datetimeDateOfBirth
+                    ->format(self::DATE_OF_BIRTH_FORMAT),
+                self::FIELD_GENDER             => $intGender,
+                self::FIELD_TITLE              => $strTitle,
+                self::FIELD_ADDRESS_LINE_1     => $strAddressOne,
+                self::FIELD_ADDRESS_LINE_2     => $strAddressTwo,
+                self::FIELD_ADDRESS_LINE_3     => $strAddressThree,
+                self::FIELD_ADDRESS_LINE_4     => $strAddressFour,
+                self::FIELD_ADDRESS_POSTCODE   => $strAddressPostcode,
+                self::FIELD_DAY_PHONE          => $strDayPhone,
+                self::FIELD_MOBILE_PHONE       => $strMobilePhone,
+                self::FIELD_EMAIL              => $strEmail,
+                self::FIELD_NOTES              => $strNotes,
+                self::FIELD_POSITION           => $intPosition,
+                self::FIELD_IS_PRIMARY_CONTACT => $boolPrimaryContact,
+                self::FIELD_FILES              => $arrModelFiles
             ]
         );
     }
@@ -190,6 +193,7 @@ class Person extends AbstractModel
             self::FIELD_EMAIL,
             self::FIELD_NOTES,
             self::FIELD_POSITION,
+            self::FIELD_IS_PRIMARY_CONTACT,
             self::FIELD_FILES
         ];
     }
@@ -284,6 +288,11 @@ class Person extends AbstractModel
     public function getPosition() : int
     {
         return $this->_getField(self::FIELD_POSITION, 0);
+    }
+
+    public function getIsPrimaryContact() : bool
+    {
+        return $this->_getField(self::FIELD_IS_PRIMARY_CONTACT, false);
     }
 
     public function getFiles() : array
