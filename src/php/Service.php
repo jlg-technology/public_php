@@ -14,8 +14,6 @@ use GuzzleHttp\{
     RequestOptions
 };
 
-use Psr\Http\Message\ResponseInterface;
-
 use GuzzleHttp\Exception\{
     ClientException,
     ServerException
@@ -39,7 +37,7 @@ class Service
         $this->_strJWT = $strJWT;
     }
 
-    public static function createFromToken($strJWT) : self
+    public static function createFromToken(string $strJWT) : self
     {
         return new self($strJWT);
     }
@@ -49,12 +47,9 @@ class Service
         string $strSecret
     ) : self
     {
-        $strUrl = self::CRM_AUTH_ENDPOINT;
-
-        $strMethod = "POST";
-
         $arrHeaders = [
-            "Content-Type" => "application/json"
+            "Content-Type" => "application/json",
+            "Accept" => "application/json"
         ];
 
         $arrData = [
@@ -64,44 +59,120 @@ class Service
             "audience"      => self::CRM_API_URL
         ];
 
-        $guzzleResponse = self::_makeRequest(
-            $strUrl,
-            $strMethod,
-            $arrHeaders,
-            $arrData
-        );
+        /**
+         * Create the guzzle options
+         */
+        $arrOptions = [
+            RequestOptions::HEADERS => $arrHeaders,
+            RequestOptions::JSON    => $arrData
+        ];
 
-        $arrResponse = self::_decodeJSONResponse($guzzleResponse);
+        $guzzleClient = new GuzzleClient();
 
+        try {
+            $guzzleResponse = $guzzleClient->request(
+                "POST",
+                self::CRM_AUTH_ENDPOINT,
+                $arrOptions
+            );
+
+        } catch (ClientException $ex) {
+            $strReasonPhrase = "No response returned";
+            $intStatusCode = 400;
+
+            $guzzleResponse = $ex->getResponse();
+            if (!is_null($guzzleResponse)) {
+                $strReasonPhrase = 
+                    $guzzleResponse->getReasonPhrase() . ", " . 
+                    $guzzleResponse->getBody()->getContents();
+                $intStatusCode   = $guzzleResponse->getStatusCode();
+            }
+
+            throw new Exception(
+                sprintf(
+                    "Client error returned from %s (%s)",
+                    self::CRM_AUTH_ENDPOINT,
+                    $strReasonPhrase
+                ), 
+                $intStatusCode
+            );
+
+        } catch (ServerException $ex) {
+            $strReasonPhrase = "No response returned";
+            $intStatusCode = 500;
+
+            $guzzleResponse = $ex->getResponse();
+            if (!is_null($guzzleResponse)) {
+                $strReasonPhrase = 
+                    $guzzleResponse->getReasonPhrase() . ", " . 
+                    $guzzleResponse->getBody()->getContents();
+                $intStatusCode   = $guzzleResponse->getStatusCode();
+            }
+
+            throw new Exception(
+                sprintf(
+                    "Server error returned from %s (%s)",
+                    self::CRM_AUTH_ENDPOINT,
+                    $strReasonPhrase
+                ), 
+                $intStatusCode
+            );
+        }
+
+        /**
+         * If no contents were returned in the body then return null
+         */
+        $objBody = $guzzleResponse->getBody();
+        if (!$objBody->isReadable()) {
+            throw new Exception(
+                "Contents returned from authentication server aren't readable"
+            );
+        }
+
+        /**
+         * Else the contents should always be in json format
+         */
+        $arrResponse = json_decode($objBody->getContents(), true);
+
+        /**
+         * Check we were able to decode the results properly
+         */
+        if (
+            $arrResponse === false ||
+            !array_key_exists("access_token", $arrResponse)
+        ) {
+            throw new Exception(
+                "Unable to decode results from server",
+                415
+            );
+        }
         return new self($arrResponse["access_token"]);
     }
 
     public function createApplication(
         ModelCompany $modelPrimaryCompany,
         ModelLoan $modelLoan,
-        array $arrModelPersons,
-        array $arrModelCompanies
+        array $arrApplicants
     ) : int
     {
         /**
-         * Validate the arrays of persons and companies are ModelPersons and
-         * ModelCompanys
+         * Validate the array of applicants are ModelPersons and ModelCompanys
          */
-        foreach ($arrModelPersons as $key => $modelPerson) {
-            if (!($modelPerson instanceof ModelPerson)) {
+        $arrModelPersons = [];
+        $arrModelCompanies = [];
+        foreach ($arrApplicants as $key => $modelApplicant) {
+            if ($modelApplicant instanceof ModelPerson) {
+                $arrModelPersons[] = $modelApplicant;
+
+            } else if ($modelApplicant instanceof ModelCompany) {
+                $arrModelCompanies[] = $modelApplicant;
+
+            } else {
                 throw new Exception(
-                    "An element of the person array is not a person model " . 
-                        "- element is at positon $key with value " . 
-                        print_r($modelPerson, true)
-                );
-            }
-        }
-        foreach ($arrModelCompanies as $key => $modelCompany) {
-            if (!($modelCompany instanceof ModelCompany)) {
-                throw new Exception(
-                    "An element of the company array is not a company model " . 
-                        "- element is at positon $key with value " . 
-                        print_r($modelCompany, true)
+                    "An element of the applicant array is not a " . 
+                        "person or company model - " . 
+                        "element is at positon $key with value " . 
+                        print_r($modelApplicant, true)
                 );
             }
         }
@@ -109,22 +180,26 @@ class Service
         /**
          * Get all the files and upload them
          */
-        $arrFiles = [];
+        $arrModelFiles = [];
         foreach ($modelPrimaryCompany->getFiles() as $modelFile) {
-            $arrFiles[] = $modelFile;
+            $arrModelFiles[] = $modelFile;
         }
         foreach ($arrModelPersons as $modelPerson) {
             foreach ($modelPerson->getFiles() as $modelFile) {
-                $arrFiles[] = $modelFile;
+                $arrModelFiles[] = $modelFile;
             }
         }
         foreach ($arrModelCompanies as $modelCompany) {
             foreach ($modelCompany->getFiles() as $modelFile) {
-                $arrFiles[] = $modelFile;
+                $arrModelFiles[] = $modelFile;
             }
         }
 
-        $this->_uploadPost($arrFiles);
+        /**
+         * Upload post will upload the files to a temporary dropbox and set
+         * the upload path in the file models
+         */
+        $this->_uploadPost($arrModelFiles);
 
         /**
          * Create the case
@@ -139,12 +214,12 @@ class Service
         return $intCasePK;
     }
 
-    private function _uploadPost(array $arrFiles)
+    private function _uploadPost(array $arrModelFiles)
     {
         /**
          * Set the request parameters
          */
-        $strUrl = self::CRM_API_URL . "/upload";
+        $strPath = "/upload";
 
         $strMethod = "POST";
 
@@ -157,7 +232,7 @@ class Service
          * Format the model files into multipart form data
          */
         $arrMultipartFileData = [];
-        foreach ($arrFiles as $key => $modelFile) {
+        foreach ($arrModelFiles as $key => $modelFile) {
             $arrMultipartFileData[] = [
                 "name"     => strval($key),
                 "contents" => fopen($modelFile->getNameAndPath(), "r"),
@@ -170,33 +245,34 @@ class Service
         /**
          * Make the request to /upload and decode the results
          */
-        $guzzleResponse = self::_makeRequest(
-            $strUrl,
+        $arrResponse = $this->_makeRequest(
+            $strPath,
             $strMethod,
             $arrHeaders,
             $arrMultipartFileData
         );
-        $arrResponse = self::_decodeJSONResponse($guzzleResponse);
 
         /**
-         * Make sure every file in $arrFiles has a matching generated file name
-         * in $arrResponse and there are no extra generated names in the 
+         * Make sure every file in $arrModelFiles has a matching generated file
+         * name in $arrResponse and there are no extra generated names in the 
          * response (should never happen but there'd be an issue if there were)
          */
         if (
-            !empty(array_diff_key($arrFiles, $arrResponse)) ||
-            count($arrFiles) !== count($arrResponse)
+            is_null($arrResponse) ||
+            array_diff_key($arrModelFiles, $arrResponse) !== [] ||
+            count($arrModelFiles) !== count($arrResponse)
         ) {
             throw new Exception(
                 "Unknown error occured, " .
-                    "mapping of files to generated paths cannot be created"
+                    "mapping of files to generated paths cannot be created",
+                415
             );
         }
 
         /**
          * Set the upload path for each file from the results
          */
-        foreach ($arrFiles as $key => $modelFile) {
+        foreach ($arrModelFiles as $key => $modelFile) {
             $modelFile->setUploadPath($arrResponse[$key]);
         }
     }
@@ -219,9 +295,10 @@ class Service
         ];
 
         /**
-         * Format the entity person data
+         * Format the entity person data and the name of the primary contact
          */
         $arrEntityPersonData = [];
+        $strPrimaryContactName = null;
         foreach ($arrModelPersons as $modelPerson) {
             /**
              * Format the model files on this person
@@ -235,33 +312,42 @@ class Service
              * Format the model person data
              */
             $arrEntityPersonData[] = [
-                "Type"        => "Person",
-                "Title"       => $modelPerson->getTitle(),
-                "Forename"    => $modelPerson->getForename(),
-                "MiddleName"  => $modelPerson->getMiddleName(),
-                "Surname"     => $modelPerson->getSurname(),
-                "DOB"         => 
-                    $modelPerson
-                        ->getDateOfBirth()
-                        ->format(self::DATE_TIME_FORMAT),
-                "AddressText" => implode(
-                    ' ',
-                    [
-                        $modelPerson->getAddressLine1(),
-                        $modelPerson->getAddressLine2(),
-                        $modelPerson->getAddressLine3(),
-                        $modelPerson->getAddressLine4()
-                    ]
-                ),
-                "Postcode"    => $modelPerson->getAddressPostcode(),
-                "DayPhone"    => $modelPerson->getDayPhone(),
-                "MobilePhone" => $modelPerson->getMobilePhone(),
-                "Email"       => $modelPerson->getEmail(),
-                "Notes"       => $modelPerson->getNotes(),
-                "Position"    => $modelPerson->getPosition(),
-                "Gender"      => $modelPerson->getGender(),
-                "Files"       => $arrFiles
+                "Type"            => "Person",
+                "Title"           => $modelPerson->getTitle(),
+                "Forename"        => $modelPerson->getForename(),
+                "MiddleName"      => $modelPerson->getMiddleName(),
+                "Surname"         => $modelPerson->getSurname(),
+                "DOB"             => $modelPerson
+                    ->getDateOfBirth()
+                    ->format(self::DATE_TIME_FORMAT),
+                "AddressLine1"    => $modelPerson->getAddressLine1(),
+                "AddressLine2"    => $modelPerson->getAddressLine2(),
+                "AddressLine3"    => $modelPerson->getAddressLine3(),
+                "AddressLine4"    => $modelPerson->getAddressLine4(),
+                "AddressPostcode" => $modelPerson->getAddressPostcode(),
+                "DayPhone"        => $modelPerson->getDayPhone(),
+                "MobilePhone"     => $modelPerson->getMobilePhone(),
+                "Email"           => $modelPerson->getEmail(),
+                "Notes"           => $modelPerson->getNotes(),
+                "Position"        => $modelPerson->getPosition(),
+                "Gender"          => $modelPerson->getGender(),
+                "Files"           => $arrFiles
             ];
+
+            if ($modelPerson->getIsPrimaryContact()) {
+                $strPrimaryContactName = $modelPerson->getForename() . " " . 
+                    $modelPerson->getSurname();
+            }
+        }
+
+        if (
+            is_null($strPrimaryContactName) &&
+            count($arrModelPersons) > 0
+        ) {
+            throw new Exception(
+                "There must be a primary contact when there is at least " . 
+                    "one person on a case"
+            );
         }
 
         /**
@@ -276,7 +362,7 @@ class Service
             );
         }
 
-        $strUrl = self::CRM_API_URL . "/case";
+        $strPath = "/case";
 
         $strMethod = "POST";
 
@@ -296,15 +382,27 @@ class Service
         ];
 
         /**
-         * Make the case post request and decode the response
+         * Make a request to /case POST and decode the response
          */
-        $guzzleResponse = self::_makeRequest(
-            $strUrl,
+        $arrResponse = $this->_makeRequest(
+            $strPath,
             $strMethod,
             $arrHeaders,
             $arrData
         );
-        $arrResponse = self::_decodeJSONResponse($guzzleResponse);
+
+        /**
+         * Make sure that a CasePK was returned from /case POST API
+         */
+        if (
+            is_null($arrResponse) ||
+            !array_key_exists("CasePK", $arrResponse)
+        ) {
+            throw new Exception(
+                "No CasePK returned from /case API", 
+                415
+            );
+        }
 
         /**
          * Return the case pk of the created case
@@ -312,19 +410,25 @@ class Service
         return $arrResponse["CasePK"];
     }
 
-    private static function _makeRequest(
-        string $strUrl,
+    private function _makeRequest(
+        string $strPath,
         string $strMethod,
         array $arrHeaders = [],
         $mixedData = null
-    ) : ResponseInterface
+    ) : ?array
     {
         $arrOptions = [];
 
+        /**
+         * Set the headers if they exist
+         */
         if ($arrHeaders) {
             $arrOptions[RequestOptions::HEADERS] = $arrHeaders;
         }
 
+        /**
+         * Set the data depending on the Content-Type
+         */
         if ($mixedData) {
             switch ($arrHeaders["Content-Type"] ?? null) {
                 case "application/json":
@@ -345,7 +449,7 @@ class Service
         try {
             $guzzleResponse = $guzzleClient->request(
                 $strMethod,
-                $strUrl,
+                self::CRM_API_URL . $strPath,
                 $arrOptions
             );
 
@@ -364,7 +468,7 @@ class Service
             throw new Exception(
                 sprintf(
                     "Client error returned from %s (%s)",
-                    $strUrl,
+                    self::CRM_API_URL . $strPath,
                     $strReasonPhrase
                 ), 
                 $intStatusCode
@@ -385,32 +489,30 @@ class Service
             throw new Exception(
                 sprintf(
                     "Server error returned from %s (%s)",
-                    $strUrl,
+                    self::CRM_API_URL . $strPath,
                     $strReasonPhrase
                 ), 
                 $intStatusCode
             );
         }
 
-        return $guzzleResponse;
-    }
-
-    private static function _decodeJSONResponse(
-        ResponseInterface $guzzleResponse
-    ) : array
-    {        
+        /**
+         * If no contents were returned in the body then return null
+         */
         $objBody = $guzzleResponse->getBody();
+        if (!$objBody->isReadable()) {
+            return null;
+        }
 
         /**
-         * Rewind the body contents to the start and read them
+         * Else the contents should always be in json format
          */
-        $objBody->seek(0);
         $arrResponse = json_decode($objBody->getContents(), true);
 
         /**
-         * Check the response was proper
+         * Check we were able to decode the results properly
          */
-        if (!$arrResponse) {
+        if ($arrResponse === false) {
             throw new Exception(
                 "Unable to decode results from server",
                 415
@@ -468,6 +570,8 @@ class Service
                 $modelCompany->getCompanyRegistrationNumber(),
             "SicCodes"                  => 
                 $modelCompany->getSicCodes(),
+            "Position"                  =>
+                $modelCompany->getPosition(),
             "Files"                     => 
                 $arrFileData
         ];
