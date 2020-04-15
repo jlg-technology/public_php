@@ -35,6 +35,7 @@ class CompanyTest extends TestCase
                 "Email",
                 "Website",
                 "Notes",
+                "Position",
                 "Files"
             ],
             Company::getFields()
@@ -46,7 +47,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -62,6 +63,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             Mockery::mock(File::class)
                 ->shouldReceive("getCategoryId")
@@ -90,6 +92,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
 
@@ -189,6 +192,11 @@ class CompanyTest extends TestCase
         );
 
         $this->assertEquals(
+            $intPosition,
+            $modelCompany->getPosition()
+        );
+
+        $this->assertEquals(
             $arrModelFiles,
             $modelCompany->getFiles()
         );
@@ -199,7 +207,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "abcdefgh";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -215,6 +223,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             Mockery::mock(File::class)
         ];
@@ -241,6 +250,60 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
+            $arrModelFiles
+        );
+    }
+
+    public function testCreate_SicCodes_Invalid()
+    {
+        $strName = "Test 1";
+        $strCRN = "12345678";
+        $datetimeIncorporationDate = new DateTime();
+        $strSicCodes = "abc";
+        $intLegalStatus = 1;
+        $strTradingAddressOne = "Test 3";
+        $strTradingAddressTwo = "Test 4";
+        $strTradingAddressThree = "Test 5";
+        $strTradingAddressFour = "Test 6";
+        $strTradingAddressPostcode = "AB1 2CD";
+        $strRegisteredAddressOne = "Test 7";
+        $strRegisteredAddressTwo = "Test 8";
+        $strRegisteredAddressThree = "Test 9";
+        $strRegisteredAddressFour = "Test 10";
+        $strRegisteredAddressPostcode = "EF3 4GH";
+        $strTelephone = "07777 777777";
+        $strEmail = "test@email.com";
+        $strWebsite = "www.test.com";
+        $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
+        $arrModelFiles = [
+            Mockery::mock(File::class)
+        ];
+
+        $this->expectException(Exception::class);
+
+        $modelCompany = Company::create(
+            $strName,
+            $strCRN,
+            $datetimeIncorporationDate,
+            $strSicCodes,
+            $intLegalStatus,
+            $strTradingAddressOne,
+            $strTradingAddressTwo,
+            $strTradingAddressThree,
+            $strTradingAddressFour,
+            $strTradingAddressPostcode,
+            $strRegisteredAddressOne,
+            $strRegisteredAddressTwo,
+            $strRegisteredAddressThree,
+            $strRegisteredAddressFour,
+            $strRegisteredAddressPostcode,
+            $strTelephone,
+            $strEmail,
+            $strWebsite,
+            $strNotes,
+            $intPosition,
             $arrModelFiles
         );
     }
@@ -250,7 +313,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 999;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -266,6 +329,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             Mockery::mock(File::class)
         ];
@@ -292,6 +356,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
     }
@@ -301,7 +366,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -317,6 +382,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             Mockery::mock(File::class)
         ];
@@ -343,6 +409,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
     }
@@ -352,7 +419,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -368,6 +435,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             Mockery::mock(File::class)
         ];
@@ -394,6 +462,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
     }
@@ -403,7 +472,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -419,6 +488,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             Mockery::mock(File::class)
         ];
@@ -445,6 +515,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
     }
@@ -454,7 +525,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -470,6 +541,7 @@ class CompanyTest extends TestCase
         $strEmail = "bad@email";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             Mockery::mock(File::class)
         ];
@@ -496,6 +568,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
     }
@@ -505,7 +578,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -521,6 +594,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
             "abcdef"
         ];
@@ -547,6 +621,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
     }
@@ -556,7 +631,7 @@ class CompanyTest extends TestCase
         $strName = "Test 1";
         $strCRN = "12345678";
         $datetimeIncorporationDate = new DateTime();
-        $strSicCodes = "Test 2";
+        $strSicCodes = "00000";
         $intLegalStatus = 1;
         $strTradingAddressOne = "Test 3";
         $strTradingAddressTwo = "Test 4";
@@ -572,6 +647,7 @@ class CompanyTest extends TestCase
         $strEmail = "test@email.com";
         $strWebsite = "www.test.com";
         $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [];
 
         $modelCompany = Company::create(
@@ -594,6 +670,7 @@ class CompanyTest extends TestCase
             $strEmail,
             $strWebsite,
             $strNotes,
+            $intPosition,
             $arrModelFiles
         );
 

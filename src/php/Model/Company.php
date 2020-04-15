@@ -28,6 +28,7 @@ class Company extends AbstractModel
     const FIELD_EMAIL                       = "Email";
     const FIELD_WEBSITE                     = "Website";
     const FIELD_NOTES                       = "Notes";
+    const FIELD_POSITION                    = "Position";
     const FIELD_FILES                       = "Files";
 
     const LEGAL_STATUS_SOLE_TRADER = 0;
@@ -36,6 +37,11 @@ class Company extends AbstractModel
     const LEGAL_STATUS_LIMITED_COMPANY = 3;
     const LEGAL_STATUS_PUBLIC_LIMITED_COMPANY = 4;
     const LEGAL_STATUS_CHARITY = 5;
+
+    const POSITION_DIRECTOR_BIT   = 1;
+    const POSITION_GUARANTOR_BIT  = 2;
+    const POSITION_PSC_BIT        = 4;
+    const POSITION_NO_CONTACT_BIT = 8;
 
     const COMPANY_REGISTRATION_NUMBER_REGEX = 
         "/^(([0-9]{8})|([A-Z]{2}[0-9]{6})|(R[0-9]{7}))$/i";
@@ -49,6 +55,7 @@ class Company extends AbstractModel
         "|ASCN|STHL|TDCU|BBND|[BFS]IQQ|PCRN|TKCA) ?[0-9][A-Z]{2}|BFPO ?" .
         "[0-9]{1,4}|(KY[0-9]|MSR|VG|AI)[ -]?[0-9]{4}|[A-Z]{2} ?[0-9]{2}|GE ?" .
         "CX|GIR ?0A{2}|SAN ?TA1))\s*$/i";
+    const SIC_CODES_REGEX = "/^\d{5}(,\s?\d{5})*$/";
 
     private const INCORPORATION_DATE_FORMAT = "Y-m-d H:i:s";
 
@@ -72,12 +79,23 @@ class Company extends AbstractModel
         ?string $strEmail,
         ?string $strWebsite,
         ?string $strNotes,
+        ?int $intPosition,
         ?array $arrModelFiles
     ) : self
     {
         if (!preg_match(self::COMPANY_REGISTRATION_NUMBER_REGEX, $strCRN)) {
             throw new Exception(
                 "'$strCRN' is not a valid company registration number"
+            );
+        }
+
+        if (
+            !is_null($strSicCodes) &&
+            !preg_match(self::SIC_CODES_REGEX, $strSicCodes)
+        ) {
+            throw new Exception(
+                "'$strSicCodes' is not a valid comma seperated list " .
+                    "of sic codes"
             );
         }
 
@@ -96,7 +114,7 @@ class Company extends AbstractModel
             )
         ) {
             throw new Exception(
-                "'$intLegalStatus' is not a valid legal status"
+                "'$intLegalStatus' is not a valid legal status id"
             );
         }
 
@@ -134,6 +152,21 @@ class Company extends AbstractModel
             throw new Exception(
                 "'$strEmail' is not a valid UK phone number"
             );
+        }
+
+        if (
+            !is_null($intPosition) &&
+            (
+                $intPosition < 0 ||
+                $intPosition > (
+                    self::POSITION_DIRECTOR_BIT + 
+                    self::POSITION_GUARANTOR_BIT +
+                    self::POSITION_PSC_BIT +
+                    self::POSITION_NO_CONTACT_BIT
+                )
+            )
+        ) {
+            throw new Exception("'$intPosition' is not a valid position");
         }
 
         if (!is_null($arrModelFiles)) {
@@ -201,6 +234,8 @@ class Company extends AbstractModel
                     $strWebsite,
                 self::FIELD_NOTES                       => 
                     $strNotes,
+                self::FIELD_POSITION                    =>
+                    $intPosition,
                 self::FIELD_FILES                       => 
                     $arrModelFiles
             ]
@@ -232,6 +267,7 @@ class Company extends AbstractModel
             self::FIELD_EMAIL,
             self::FIELD_WEBSITE,
             self::FIELD_NOTES,
+            self::FIELD_POSITION,
             self::FIELD_FILES
         ];
     }
@@ -347,6 +383,11 @@ class Company extends AbstractModel
     public function getNotes() : string
     {
         return $this->_getField(self::FIELD_NOTES, "");
+    }
+
+    public function getPosition() : int
+    {
+        return $this->_getField(self::FIELD_POSITION, 0);
     }
 
     public function getFiles() : array
