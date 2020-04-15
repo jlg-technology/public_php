@@ -55,30 +55,9 @@ class ServiceTest extends TestCase
             $this->_strClientSecret
         );
 
-        $arrFiles = [
-            ModelFile::create(
-                "./test.txt",
-                "text/plain",
-                "A test file for the primary company",
-                ModelFile::CATEGORY_AML_CHECKLIST
-            ),
-            ModelFile::create(
-                "./test.txt",
-                "text/plain",
-                "A test file for the applicant person",
-                ModelFile::CATEGORY_GUARANTOR_DETAILS
-            ),
-            ModelFile::create(
-                "./test.txt",
-                "text/plain",
-                "A test file for the applicant company",
-                ModelFile::CATEGORY_AML_CHECKLIST
-            )
-        ];
-
         $modelPrimaryCompany = ModelCompany::create(
             "Test Primary Company",
-            "64564566",
+            "64564572",
             new DateTime(),
             "00000",
             ModelCompany::LEGAL_STATUS_SOLE_TRADER,
@@ -96,7 +75,15 @@ class ServiceTest extends TestCase
             "test@email.com",
             "www.test.com",
             "Notes about the primary company",
-            [$arrFiles[0]]
+            null,
+            [
+                ModelFile::create(
+                    "./test.txt",
+                    "text/plain",
+                    "A test file for the primary company",
+                    ModelFile::CATEGORY_AML_CHECKLIST
+                )
+            ]
         );
 
         $modelLoan = ModelLoan::create(
@@ -116,12 +103,20 @@ class ServiceTest extends TestCase
             "Address line 3",
             "Address line 4",
             "AB1 2CD",
-            null,
-            null,
-            null,
-            null,
-            null,
-            [$arrFiles[1]]
+            "07000 000000",
+            "07000 000000",
+            "test@email.com",
+            "Notes about the applicant person",
+            ModelCompany::POSITION_DIRECTOR_BIT,
+            true,
+            [
+                ModelFile::create(
+                    "./test.txt",
+                    "text/plain",
+                    "A test file for the applicant person",
+                    ModelFile::CATEGORY_GUARANTOR_DETAILS
+                )
+            ]
         );
 
         $modelApplicantCompany = ModelCompany::create(
@@ -144,14 +139,21 @@ class ServiceTest extends TestCase
             "test@email.com",
             "www.test.com",
             "Notes about the applicant company",
-            [$arrFiles[2]]
+            ModelCompany::POSITION_PSC_BIT,
+            [
+                ModelFile::create(
+                    "./test.txt",
+                    "text/plain",
+                    "A test file for the applicant company",
+                    ModelFile::CATEGORY_AML_CHECKLIST
+                )
+            ]
         );
 
         $intCasePK = $objService->createApplication(
             $modelPrimaryCompany,
             $modelLoan,
-            [$modelApplicantPerson],
-            [$modelApplicantCompany]
+            [$modelApplicantPerson, $modelApplicantCompany]
         );
         
         exit(var_dump($intCasePK));
