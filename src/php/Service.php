@@ -27,7 +27,10 @@ class Service
 {
     private const CRM_AUTH_ENDPOINT = 
         "https://auth.just-cashflow.com/oauth/token";
-    private const CRM_API_URL = "https://api.crm.dev.jlg-technology.com";
+    //private const CRM_API_URL = "https://api.crm.dev.jlg-technology.com";
+    private const CRM_API_URL = "http://api.alfi.local";
+
+    private const DATE_TIME_FORMAT = "Y-m-d H:i:s";
 
     private $_strJWT;
 
@@ -73,6 +76,69 @@ class Service
         return new self($arrResponse["access_token"]);
     }
 
+    public function createApplication(
+        ModelCompany $modelPrimaryCompany,
+        ModelLoan $modelLoan,
+        array $arrModelPersons,
+        array $arrModelCompanies
+    ) : int
+    {
+        /**
+         * Validate the arrays of persons and companies are ModelPersons and
+         * ModelCompanys
+         */
+        foreach ($arrModelPersons as $key => $modelPerson) {
+            if (!($modelPerson instanceof ModelPerson)) {
+                throw new Exception(
+                    "An element of the person array is not a person model " . 
+                        "- element is at positon $key with value " . 
+                        print_r($modelPerson, true)
+                );
+            }
+        }
+        foreach ($arrModelCompanies as $key => $modelCompany) {
+            if (!($modelCompany instanceof ModelCompany)) {
+                throw new Exception(
+                    "An element of the company array is not a company model " . 
+                        "- element is at positon $key with value " . 
+                        print_r($modelCompany, true)
+                );
+            }
+        }
+
+        /**
+         * Get all the files and upload them
+         */
+        $arrFiles = [];
+        foreach ($modelPrimaryCompany->getFiles() as $modelFile) {
+            $arrFiles[] = $modelFile;
+        }
+        foreach ($arrModelPersons as $modelPerson) {
+            foreach ($modelPerson->getFiles() as $modelFile) {
+                $arrFiles[] = $modelFile;
+            }
+        }
+        foreach ($arrModelCompanies as $modelCompany) {
+            foreach ($modelCompany->getFiles() as $modelFile) {
+                $arrFiles[] = $modelFile;
+            }
+        }
+
+        $this->_uploadPost($arrFiles);
+
+        /**
+         * Create the case
+         */
+        $intCasePK = $this->_casePost(
+            $modelPrimaryCompany,
+            $modelLoan,
+            $arrModelPersons,
+            $arrModelCompanies
+        );
+
+        return $intCasePK;
+    }
+
     private function _uploadPost(array $arrFiles)
     {
         /**
@@ -110,23 +176,29 @@ class Service
             $arrHeaders,
             $arrMultipartFileData
         );
-
         $arrResponse = self::_decodeJSONResponse($guzzleResponse);
+
+        /**
+         * Make sure every file in $arrFiles has a matching generated file name
+         * in $arrResponse and there are no extra generated names in the 
+         * response (should never happen but there'd be an issue if there were)
+         */
+        if (
+            !empty(array_diff_key($arrFiles, $arrResponse)) ||
+            count($arrFiles) !== count($arrResponse)
+        ) {
+            throw new Exception(
+                "Unknown error occured, " .
+                    "mapping of files to generated paths cannot be created"
+            );
+        }
 
         /**
          * Set the upload path for each file from the results
          */
-        foreach ($arrResponse as $key => $strGeneratedFileName) {
-            $modelFile = $arrFiles[$key];
-
-            if ($modelFile) {
-                $modelFile->setUploadPath($strGeneratedFileName);
-
-                $arrFiles[$key] = $modelFile;
-            }
+        foreach ($arrFiles as $key => $modelFile) {
+            $modelFile->setUploadPath($arrResponse[$key]);
         }
-
-        return $arrFiles;
     }
 
     private function _casePost(
@@ -163,11 +235,15 @@ class Service
              * Format the model person data
              */
             $arrEntityPersonData[] = [
+                "Type"        => "Person",
                 "Title"       => $modelPerson->getTitle(),
                 "Forename"    => $modelPerson->getForename(),
                 "MiddleName"  => $modelPerson->getMiddleName(),
                 "Surname"     => $modelPerson->getSurname(),
-                "DOB"         => $modelPerson->getDateOfBirth(),
+                "DOB"         => 
+                    $modelPerson
+                        ->getDateOfBirth()
+                        ->format(self::DATE_TIME_FORMAT),
                 "AddressText" => implode(
                     ' ',
                     [
@@ -193,10 +269,14 @@ class Service
          */
         $arrEntityCompanyData = [];
         foreach ($arrModelCompanies as $modelCompany) {
-            $arrEntityCompanyData[] = $this->_getCompanyData($modelCompany);
+            
+            $arrEntityCompanyData[] = array_merge(
+                ["Type" => "Company"],
+                $this->_getCompanyData($modelCompany)
+            );
         }
 
-        $strUrl = self::CRM_API_URL;
+        $strUrl = self::CRM_API_URL . "/case";
 
         $strMethod = "POST";
 
@@ -270,12 +350,15 @@ class Service
             );
 
         } catch (ClientException $ex) {
-            $strReasonPhrase = "Empty response returned";
+            $strReasonPhrase = "No response returned";
             $intStatusCode = 400;
+
             $guzzleResponse = $ex->getResponse();
             if (!is_null($guzzleResponse)) {
-                $strReasonPhrase = $guzzleResponse->getReasonPhrase();
-                $intStatusCode = $guzzleResponse->getStatusCode();
+                $strReasonPhrase = 
+                    $guzzleResponse->getReasonPhrase() . ", " . 
+                    $guzzleResponse->getBody()->getContents();
+                $intStatusCode   = $guzzleResponse->getStatusCode();
             }
 
             throw new Exception(
@@ -288,12 +371,15 @@ class Service
             );
 
         } catch (ServerException $ex) {
-            $strReasonPhrase = "Empty response returned";
+            $strReasonPhrase = "No response returned";
             $intStatusCode = 500;
+
             $guzzleResponse = $ex->getResponse();
             if (!is_null($guzzleResponse)) {
-                $strReasonPhrase = $guzzleResponse->getReasonPhrase();
-                $intStatusCode = $guzzleResponse->getStatusCode();
+                $strReasonPhrase = 
+                    $guzzleResponse->getReasonPhrase() . ", " . 
+                    $guzzleResponse->getBody()->getContents();
+                $intStatusCode   = $guzzleResponse->getStatusCode();
             }
 
             throw new Exception(
@@ -342,26 +428,48 @@ class Service
         }
 
         return [
-            "CompanyName"               => $modelCompany->getName(),
-            "LegalStatus"               => $modelCompany->getLegalStatus(),
-            "TradingAddressLine1"       => $modelCompany->getTradingAddressLine1(),
-            "TradingAddressLine2"       => $modelCompany->getTradingAddressLine2(),
-            "TradingAddressLine3"       => $modelCompany->getTradingAddressLine3(),
-            "TradingAddressLine4"       => $modelCompany->getTradingAddressLine4(),
-            "TradingAddressPostcode"    => $modelCompany->getTradingAddressPostcode(),    
-            "RegisteredAddressLine1"    => $modelCompany->getRegisteredAddressLine1(),    
-            "RegisteredAddressLine2"    => $modelCompany->getRegisteredAddressLine2(),    
-            "RegisteredAddressLine3"    => $modelCompany->getRegisteredAddressLine3(),    
-            "RegisteredAddressLine4"    => $modelCompany->getRegisteredAddressLine4(),    
-            "RegisteredAddressPostcode" => $modelCompany->getRegisteredAddressPostcode(),    
-            "Telephone"                 => $modelCompany->getTelephone(),
-            "Email"                     => $modelCompany->getEmail(),
-            "Website"                   => $modelCompany->getWebsite(),
-            "Notes"                     => $modelCompany->getNotes(),
-            "IncorporationDate"         => $modelCompany->getIncorporationDate(),
-            "CompanyRegistrationNo"     => $modelCompany->getCompanyRegistrationNumber(),
-            "SicCodes"                  => $modelCompany->getSicCodes(),
-            "Files"                     => $arrFileData
+            "CompanyName"               => 
+                $modelCompany->getName(),
+            "LegalStatus"               => 
+                $modelCompany->getLegalStatus(),
+            "TradingAddressLine1"       => 
+                $modelCompany->getTradingAddressLine1(),
+            "TradingAddressLine2"       => 
+                $modelCompany->getTradingAddressLine2(),
+            "TradingAddressLine3"       => 
+                $modelCompany->getTradingAddressLine3(),
+            "TradingAddressLine4"       => 
+                $modelCompany->getTradingAddressLine4(),
+            "TradingAddressPostcode"    => 
+                $modelCompany->getTradingAddressPostcode(),    
+            "RegisteredAddressLine1"    => 
+                $modelCompany->getRegisteredAddressLine1(),    
+            "RegisteredAddressLine2"    => 
+                $modelCompany->getRegisteredAddressLine2(),    
+            "RegisteredAddressLine3"    => 
+                $modelCompany->getRegisteredAddressLine3(),    
+            "RegisteredAddressLine4"    => 
+                $modelCompany->getRegisteredAddressLine4(),    
+            "RegisteredAddressPostcode" => 
+                $modelCompany->getRegisteredAddressPostcode(),    
+            "Telephone"                 => 
+                $modelCompany->getTelephone(),
+            "Email"                     => 
+                $modelCompany->getEmail(),
+            "Website"                   => 
+                $modelCompany->getWebsite(),
+            "Notes"                     => 
+                $modelCompany->getNotes(),
+            "IncorporationDate"         => 
+                $modelCompany
+                    ->getIncorporationDate()
+                    ->format(self::DATE_TIME_FORMAT),
+            "CompanyRegistrationNo"     => 
+                $modelCompany->getCompanyRegistrationNumber(),
+            "SicCodes"                  => 
+                $modelCompany->getSicCodes(),
+            "Files"                     => 
+                $arrFileData
         ];
     }
 
