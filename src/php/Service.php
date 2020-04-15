@@ -30,9 +30,10 @@ class Service
 
     private const DATE_TIME_FORMAT = "Y-m-d H:i:s";
 
-    private $_strJWT;
-
     private static $_boolDebugOn;
+    private static $_guzzleClient;
+
+    private $_strJWT;
 
     private function __construct(string $strJWT)
     {
@@ -69,7 +70,7 @@ class Service
             RequestOptions::JSON    => $arrData
         ];
 
-        $guzzleClient = new GuzzleClient();
+        $guzzleClient = self::_getGuzzleClient();
 
         try {
             $guzzleResponse = $guzzleClient->request(
@@ -156,11 +157,27 @@ class Service
         self::$_boolDebugOn = $boolDebugOn;
     }
 
+    public static function setGuzzleClientForUnitTests(
+        GuzzleClient $guzzleClient
+    )
+    {
+        self::$_guzzleClient = $guzzleClient;
+    }
+
     private static function _getURLHost() : string
     {
         return self::$_boolDebugOn 
             ? self::CRM_DEV_API_URL 
             : self::CRM_PROD_API_URL;
+    }
+
+    private static function _getGuzzleClient() : GuzzleClient
+    {
+        if (!isset(self::$_guzzleClient)) {
+            self::$_guzzleClient = new GuzzleClient();
+        }
+
+        return self::$_guzzleClient;
     }
 
     public function createApplication(
@@ -458,7 +475,7 @@ class Service
             }
         }
 
-        $guzzleClient = new GuzzleClient();
+        $guzzleClient = self::_getGuzzleClient();
 
         try {
             $guzzleResponse = $guzzleClient->request(
