@@ -25,12 +25,14 @@ class Service
 {
     private const CRM_AUTH_ENDPOINT = 
         "https://auth.just-cashflow.com/oauth/token";
-    //private const CRM_API_URL = "https://api.crm.dev.jlg-technology.com";
-    private const CRM_API_URL = "http://api.alfi.local";
+    private const CRM_DEV_API_URL   = "https://api.crm.dev.jlg-technology.com";
+    private const CRM_PROD_API_URL  = "https://api.crm.prod.jlg-technology.com";
 
     private const DATE_TIME_FORMAT = "Y-m-d H:i:s";
 
     private $_strJWT;
+
+    private static $_boolDebugOn;
 
     private function __construct(string $strJWT)
     {
@@ -56,7 +58,7 @@ class Service
             "grant_type"    => "client_credentials",
             "client_id"     => $strClientId,
             "client_secret" => $strSecret,
-            "audience"      => self::CRM_API_URL
+            "audience"      => self::_getURLHost()
         ];
 
         /**
@@ -147,6 +149,18 @@ class Service
             );
         }
         return new self($arrResponse["access_token"]);
+    }
+
+    public static function setDebugMode(bool $boolDebugOn)
+    {
+        self::$_boolDebugOn = $boolDebugOn;
+    }
+
+    private static function _getURLHost() : string
+    {
+        return self::$_boolDebugOn 
+            ? self::CRM_DEV_API_URL 
+            : self::CRM_PROD_API_URL;
     }
 
     public function createApplication(
@@ -449,7 +463,7 @@ class Service
         try {
             $guzzleResponse = $guzzleClient->request(
                 $strMethod,
-                self::CRM_API_URL . $strPath,
+                self::_getURLHost() . $strPath,
                 $arrOptions
             );
 
@@ -468,7 +482,7 @@ class Service
             throw new Exception(
                 sprintf(
                     "Client error returned from %s (%s)",
-                    self::CRM_API_URL . $strPath,
+                    self::_getURLHost() . $strPath,
                     $strReasonPhrase
                 ), 
                 $intStatusCode
@@ -489,7 +503,7 @@ class Service
             throw new Exception(
                 sprintf(
                     "Server error returned from %s (%s)",
-                    self::CRM_API_URL . $strPath,
+                    self::_getURLHost() . $strPath,
                     $strReasonPhrase
                 ), 
                 $intStatusCode

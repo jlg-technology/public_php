@@ -17,9 +17,19 @@ use \Exception as Exception;
 
 class ServiceTest extends TestCase
 {
-    private $_strClientId = "2Pduwk0RnkbzAXwlWtFsLtSFQeDdQ1Pu";
+    private $_strClientId     = "DlAaul2JB6vKVrlOQ0VB0NNjoIG443H4";
     private $_strClientSecret = 
-        "LfEUETn0XYx18n8HKHFeE_P5Kwb1PKfUi0-N3ayB7cJBS6ar3n7ujbTnQdjtCe4d";
+        "wYlA3pjtEYM6jOxdtGn4F2WqvIWI3k6fWIxFOeZpWWas2flxYpxOx14LVBCSBoct";
+
+    protected function setUp()
+    {
+        Service::setDebugMode(true);
+    }
+
+    protected function tearDown()
+    {
+        Service::setDebugMode(false);
+    }
 
     public function testCreateFromCredentials()
     {
@@ -156,6 +166,19 @@ class ServiceTest extends TestCase
             [$modelApplicantPerson, $modelApplicantCompany]
         );
         
-        exit(var_dump($intCasePK));
+        $arrPersonFiles = $modelApplicantPerson->getFiles();
+        $this->assertNotNull(
+            $arrPersonFiles[0]->getUploadPath()
+        );
+        
+        $arrCompanyFiles = $modelApplicantCompany->getFiles();
+        $this->assertNotNull(
+            $arrCompanyFiles[0]->getUploadPath()
+        );
+
+        $this->assertInternalType(
+            "int",
+            $intCasePK
+        );
     }
 }
