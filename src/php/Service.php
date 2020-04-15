@@ -180,6 +180,11 @@ class Service
         return self::$_guzzleClient;
     }
 
+    public function getToken() : string
+    {
+        return $this->_strJWT;
+    }
+
     public function createApplication(
         ModelCompany $modelPrimaryCompany,
         ModelLoan $modelLoan,
