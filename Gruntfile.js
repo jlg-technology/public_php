@@ -99,7 +99,8 @@ module.exports = function(grunt) {
             "phpcs",
             "phpcsfixer",
             "exec:phpstan",
-            "phpunit-runner:unit"
+            "phpunit-runner:unit",
+            "phpunit-runner:functional"
         ]
     );
 
