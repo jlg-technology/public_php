@@ -23,10 +23,10 @@ use \Exception as Exception;
 
 class Service
 {
-    private const CRM_AUTH_ENDPOINT = 
+    public  const CRM_AUTH_ENDPOINT = 
         "https://auth.just-cashflow.com/oauth/token";
+    public  const CRM_API_URL       = "https://api.crm.prod.jlg-technology.com";
     private const CRM_DEV_API_URL   = "https://api.crm.dev.jlg-technology.com";
-    private const CRM_PROD_API_URL  = "https://api.crm.prod.jlg-technology.com";
 
     private const DATE_TIME_FORMAT = "Y-m-d H:i:s";
 
@@ -40,14 +40,20 @@ class Service
         $this->_strJWT = $strJWT;
     }
 
+    /**
+     * Used to create the API service if you already have a token
+     */
     public static function createFromToken(string $strJWT) : self
     {
         return new self($strJWT);
     }
 
+    /**
+     * Used to create the API service if you need to also generate a token
+     */
     public static function createFromCredentials(
         string $strClientId,
-        string $strSecret
+        string $strClientSecret
     ) : self
     {
         $arrHeaders = [
@@ -58,7 +64,7 @@ class Service
         $arrData = [
             "grant_type"    => "client_credentials",
             "client_id"     => $strClientId,
-            "client_secret" => $strSecret,
+            "client_secret" => $strClientSecret,
             "audience"      => self::_getURLHost()
         ];
 
@@ -70,10 +76,8 @@ class Service
             RequestOptions::JSON    => $arrData
         ];
 
-        $guzzleClient = self::_getGuzzleClient();
-
         try {
-            $guzzleResponse = $guzzleClient->request(
+            $guzzleResponse = self::_getGuzzleClient()->request(
                 "POST",
                 self::CRM_AUTH_ENDPOINT,
                 $arrOptions
@@ -152,11 +156,18 @@ class Service
         return new self($arrResponse["access_token"]);
     }
 
+    /**
+     * Will change the active API URL to the developer CRM API URL
+     */
     public static function setDebugMode(bool $boolDebugOn)
     {
         self::$_boolDebugOn = $boolDebugOn;
     }
 
+    /**
+     * Injects a guzzle client to be used for all requests in order to unit
+     * test the service or see what requests are being made
+     */
     public static function setGuzzleClientForUnitTests(
         GuzzleClient $guzzleClient
     )
@@ -164,13 +175,19 @@ class Service
         self::$_guzzleClient = $guzzleClient;
     }
 
+    /**
+     * Returns the API URL dependent on the debug mode variable
+     */
     private static function _getURLHost() : string
     {
         return self::$_boolDebugOn 
             ? self::CRM_DEV_API_URL 
-            : self::CRM_PROD_API_URL;
+            : self::CRM_API_URL;
     }
 
+    /**
+     * Gets the guzzle client or creates one if it doesn't exist
+     */
     private static function _getGuzzleClient() : GuzzleClient
     {
         if (!isset(self::$_guzzleClient)) {
@@ -180,11 +197,17 @@ class Service
         return self::$_guzzleClient;
     }
 
+    /**
+     * Gets the token used by this instance of the service
+     */
     public function getToken() : string
     {
         return $this->_strJWT;
     }
 
+    /**
+     * Uploads files and creates a case for the models provided
+     */
     public function createApplication(
         ModelCompany $modelPrimaryCompany,
         ModelLoan $modelLoan,
@@ -250,8 +273,18 @@ class Service
         return $intCasePK;
     }
 
+    /**
+     * Calls /upload POST
+     */
     private function _uploadPost(array $arrModelFiles)
     {
+        /**
+         * If there are no files then don't bother making a request
+         */
+        if ($arrModelFiles === []) {
+            return;
+        }
+
         /**
          * Set the request parameters
          */
@@ -290,13 +323,12 @@ class Service
 
         /**
          * Make sure every file in $arrModelFiles has a matching generated file
-         * name in $arrResponse and there are no extra generated names in the 
-         * response (should never happen but there'd be an issue if there were)
+         * name in $arrResponse
          */
         if (
             is_null($arrResponse) ||
             array_diff_key($arrModelFiles, $arrResponse) !== [] ||
-            count($arrModelFiles) !== count($arrResponse)
+            array_diff_key($arrResponse, $arrModelFiles) !== []
         ) {
             throw new Exception(
                 "Unknown error occured, " .
@@ -313,6 +345,9 @@ class Service
         }
     }
 
+    /**
+     * Calls /case POST
+     */
     private function _casePost(
         ModelCompany $modelPrimaryCompany,
         ModelLoan $modelLoan,
@@ -409,12 +444,13 @@ class Service
         ];
 
         $arrData = [
-            "Primary"  => $this->_getCompanyData($modelPrimaryCompany),
+            "Primary"  => $arrPrimaryData,
             "Loan"     => $arrLoanData,
             "Entities" => array_merge(
                 $arrEntityPersonData,
                 $arrEntityCompanyData
-            )
+            ),
+            "PrimaryContactName" => $strPrimaryContactName
         ];
 
         /**
@@ -446,6 +482,9 @@ class Service
         return $arrResponse["CasePK"];
     }
 
+    /**
+     * Makes a request and decodes a JSON response
+     */
     private function _makeRequest(
         string $strPath,
         string $strMethod,
@@ -553,6 +592,7 @@ class Service
                 "Unable to decode results from server",
                 415
             );
+
         }
 
         return $arrResponse;
