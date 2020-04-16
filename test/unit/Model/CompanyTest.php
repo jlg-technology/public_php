@@ -12,6 +12,11 @@ use \Exception as Exception;
 
 class CompanyTest extends TestCase
 {
+    public function tearDown()
+    {
+        Mockery::close();
+    }
+
     public function testGetFields()
     {
         $this->assertEquals(
@@ -69,6 +74,7 @@ class CompanyTest extends TestCase
                 ->shouldReceive("getCategoryId")
                 ->withNoArgs()
                 ->andReturn(File::CATEGORY_SEARCHES)
+                ->once()
                 ->mock()
         ];
 
@@ -596,7 +602,69 @@ class CompanyTest extends TestCase
         $strNotes = "Test 11";
         $intPosition = Company::POSITION_DIRECTOR_BIT;
         $arrModelFiles = [
-            "abcdef"
+            Mockery::mock(Loan::class)
+        ];
+
+        $this->expectException(Exception::class);
+
+        $modelCompany = Company::create(
+            $strName,
+            $strCRN,
+            $datetimeIncorporationDate,
+            $strSicCodes,
+            $intLegalStatus,
+            $strTradingAddressOne,
+            $strTradingAddressTwo,
+            $strTradingAddressThree,
+            $strTradingAddressFour,
+            $strTradingAddressPostcode,
+            $strRegisteredAddressOne,
+            $strRegisteredAddressTwo,
+            $strRegisteredAddressThree,
+            $strRegisteredAddressFour,
+            $strRegisteredAddressPostcode,
+            $strTelephone,
+            $strEmail,
+            $strWebsite,
+            $strNotes,
+            $intPosition,
+            $arrModelFiles
+        );
+    }
+
+    public function testCreate_File_Array_Invalid_Category()
+    {
+        $strName = "Test 1";
+        $strCRN = "12345678";
+        $datetimeIncorporationDate = new DateTime();
+        $strSicCodes = "00000";
+        $intLegalStatus = 1;
+        $strTradingAddressOne = "Test 3";
+        $strTradingAddressTwo = "Test 4";
+        $strTradingAddressThree = "Test 5";
+        $strTradingAddressFour = "Test 6";
+        $strTradingAddressPostcode = "AB1 2CD";
+        $strRegisteredAddressOne = "Test 7";
+        $strRegisteredAddressTwo = "Test 8";
+        $strRegisteredAddressThree = "Test 9";
+        $strRegisteredAddressFour = "Test 10";
+        $strRegisteredAddressPostcode = "EF3 4GH";
+        $strTelephone = "07777 777777";
+        $strEmail = "test@email.com";
+        $strWebsite = "www.test.com";
+        $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
+        $arrModelFiles = [
+            Mockery::mock(File::class)
+                ->shouldReceive("getCategoryId")
+                ->withNoArgs()
+                ->andReturn(File::CATEGORY_GUARANTOR_DETAILS)
+                ->twice()
+                ->shouldReceive("getNameAndPath")
+                ->withNoArgs()
+                ->andReturn("Test")
+                ->once()
+                ->mock()
         ];
 
         $this->expectException(Exception::class);
@@ -683,7 +751,9 @@ class CompanyTest extends TestCase
             ->shouldReceive("getCategoryId")
             ->withNoArgs()
             ->andReturn(File::CATEGORY_SEARCHES)
+            ->once()
             ->mock();
+
         $arrModelFiles[] = $mockModelFile;
 
         $modelCompany->addFile($mockModelFile);
@@ -692,5 +762,70 @@ class CompanyTest extends TestCase
             $arrModelFiles,
             $modelCompany->getFiles()
         );
+    }
+
+    public function testAddFile_Invalid_Category_Id()
+    {
+        $strName = "Test 1";
+        $strCRN = "12345678";
+        $datetimeIncorporationDate = new DateTime();
+        $strSicCodes = "00000";
+        $intLegalStatus = 1;
+        $strTradingAddressOne = "Test 3";
+        $strTradingAddressTwo = "Test 4";
+        $strTradingAddressThree = "Test 5";
+        $strTradingAddressFour = "Test 6";
+        $strTradingAddressPostcode = "AB1 2CD";
+        $strRegisteredAddressOne = "Test 7";
+        $strRegisteredAddressTwo = "Test 8";
+        $strRegisteredAddressThree = "Test 9";
+        $strRegisteredAddressFour = "Test 10";
+        $strRegisteredAddressPostcode = "EF3 4GH";
+        $strTelephone = "07777 777777";
+        $strEmail = "test@email.com";
+        $strWebsite = "www.test.com";
+        $strNotes = "Test 11";
+        $intPosition = Company::POSITION_DIRECTOR_BIT;
+        $arrModelFiles = [];
+
+        $modelCompany = Company::create(
+            $strName,
+            $strCRN,
+            $datetimeIncorporationDate,
+            $strSicCodes,
+            $intLegalStatus,
+            $strTradingAddressOne,
+            $strTradingAddressTwo,
+            $strTradingAddressThree,
+            $strTradingAddressFour,
+            $strTradingAddressPostcode,
+            $strRegisteredAddressOne,
+            $strRegisteredAddressTwo,
+            $strRegisteredAddressThree,
+            $strRegisteredAddressFour,
+            $strRegisteredAddressPostcode,
+            $strTelephone,
+            $strEmail,
+            $strWebsite,
+            $strNotes,
+            $intPosition,
+            $arrModelFiles
+        );
+
+        $this->assertEquals(
+            $arrModelFiles,
+            $modelCompany->getFiles()
+        );
+
+        $mockModelFile = Mockery::mock(File::class)
+            ->shouldReceive("getCategoryId")
+            ->withNoArgs()
+            ->andReturn(File::CATEGORY_GUARANTOR_DETAILS)
+            ->twice()
+            ->mock();
+
+        $this->expectException(Exception::class);
+
+        $modelCompany->addFile($mockModelFile);
     }
 }

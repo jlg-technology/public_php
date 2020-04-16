@@ -27,7 +27,7 @@ class ServiceTest extends TestCase
         Service::setDebugMode(false);
     }
 
-    public function testCreate()
+    public function testCreateFromToken()
     {
         $strJWT = "Test";
 
