@@ -243,6 +243,9 @@ class Service
         foreach ($modelPrimaryCompany->getFiles() as $modelFile) {
             $arrModelFiles[] = $modelFile;
         }
+        foreach ($modelLoan->getFiles() as $modelFile) {
+            $arrModelFiles[] = $modelFile;
+        }
         foreach ($arrModelPersons as $modelPerson) {
             foreach ($modelPerson->getFiles() as $modelFile) {
                 $arrModelFiles[] = $modelFile;
@@ -360,9 +363,17 @@ class Service
          */
         $arrPrimaryData = $this->_getCompanyData($modelPrimaryCompany);
 
+        /**
+         * Format the model files on the loan
+         */
+        $arrFiles = [];
+        foreach ($modelLoan->getFiles() as $modelFile) {
+            $arrFiles[] = $this->_getFileData($modelFile);
+        }
         $arrLoanData = [
             "FacilityAmountRequested" => $modelLoan->getAmount(),
-            "FacilityUse"             => $modelLoan->getUse()
+            "FacilityUse"             => $modelLoan->getUse(),
+            "Files"                   => $arrFiles
         ];
 
         /**
