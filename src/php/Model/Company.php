@@ -186,7 +186,7 @@ class Company extends AbstractModel
                     throw new Exception(
                         "'" . $modelFile->getCategoryId() . "' " . 
                             "on file '" . $modelFile->getNameAndPath() . "' " .
-                            "is not a valid company category"
+                            "is not a valid company file category"
                     );
                 }
             }

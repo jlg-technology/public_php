@@ -140,7 +140,7 @@ class Person extends AbstractModel
                     throw new Exception(
                         "'" . $modelFile->getCategoryId() . "' " . 
                             "on file '" . $modelFile->getNameAndPath() . "' " .
-                            "is not a valid person category"
+                            "is not a valid person file category"
                     );
                 }
             }

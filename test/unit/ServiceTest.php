@@ -165,6 +165,13 @@ class ServiceTest extends TestCase
         $intLoanFacilityAmount = 123;
         $strLoanFacilityUse    = "Test Facility Use";
 
+        $strLoanFilePath        = "TestLoanPath";
+        $strLoanFileName        = "TestLoanName";
+        $strLoanFileMimeType    = "Test Mime Loan";
+        $strLoanFileDescription = "A test file for the loan";
+        $intLoanFileCategoryId  = ModelFile::CATEGORY_SOURCING_RESULTS;
+        $strLoanFileUploadPath  = "Test Upload Path Loan";
+
         $strAppPersonForename       = "Test Forename";
         $strAppPersonMiddleName     = "Test Middle Name";
         $strAppPersonSurname        = "Test Surname";
@@ -347,9 +354,40 @@ class ServiceTest extends TestCase
             ->mock();
 
         /**
-         * Loan model
+         * Loan models
          */
+        $mockLoanFile = Mockery::mock(ModelFile::class)
+            ->shouldReceive("getNameAndPath")
+            ->withNoArgs()
+            ->andReturn($strLoanFilePath . '/' . $strLoanFileName)
+            ->twice()
+            ->shouldReceive("getMimeType")
+            ->withNoArgs()
+            ->andReturn($strLoanFileMimeType)
+            ->twice()
+            ->shouldReceive("getDescription")
+            ->withNoArgs()
+            ->andReturn($strLoanFileDescription)
+            ->once()
+            ->shouldReceive("getCategoryId")
+            ->withNoArgs()
+            ->andReturn($intLoanFileCategoryId)
+            ->once()
+            ->shouldReceive("getUploadPath")
+            ->withNoArgs()
+            ->andReturn($strLoanFileUploadPath)
+            ->once()
+            ->shouldReceive("setUploadPath")
+            ->with($strLoanFileUploadPath)
+            ->andReturnSelf()
+            ->once()
+            ->mock();
+
         $mockModelLoan = Mockery::mock(ModelLoan::class)
+            ->shouldReceive("getFiles")
+            ->withNoArgs()
+            ->andReturn([$mockLoanFile])
+            ->twice()
             ->shouldReceive("getAmount")
             ->withNoArgs()
             ->andReturn($intLoanFacilityAmount)
@@ -591,8 +629,9 @@ class ServiceTest extends TestCase
                 ['Foo' => 'Bar'],
                 json_encode([
                     $strPrimaryFileUploadPath,   // Note this should be in the
-                    $strAppPersonFileUploadPath, // same order as the array of
-                    $strAppCompanyFileUploadPath // files passed to _uploadPost
+                    $strLoanFileUploadPath,      // same order as the array of
+                    $strAppPersonFileUploadPath, // files passed to _uploadPost
+                    $strAppCompanyFileUploadPath
                 ])
             ),
             new GuzzleResponse(
@@ -714,7 +753,16 @@ class ServiceTest extends TestCase
                 ],
                 "Loan" => [
                     "FacilityAmountRequested" => $intLoanFacilityAmount,
-                    "FacilityUse"             => $strLoanFacilityUse
+                    "FacilityUse"             => $strLoanFacilityUse,
+                    "Files"                   => [
+                        [
+                            "FileName"          => $strLoanFileName,
+                            "GeneratedFileName" => $strLoanFileUploadPath,
+                            "Description"       => $strLoanFileDescription,
+                            "CategoryID"        => $intLoanFileCategoryId,
+                            "MimeType"          => $strLoanFileMimeType
+                        ]
+                    ]
                 ],
                 "Entities" => [
                     [
@@ -978,6 +1026,10 @@ class ServiceTest extends TestCase
          * Loan model
          */
         $mockModelLoan = Mockery::mock(ModelLoan::class)
+            ->shouldReceive("getFiles")
+            ->withNoArgs()
+            ->andReturn([])
+            ->twice()
             ->shouldReceive("getAmount")
             ->withNoArgs()
             ->andReturn($intLoanFacilityAmount)
