@@ -58,7 +58,7 @@ class FileTest extends TestCase
         $strName = "Test 1";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 1;
+        $strCategoryId = "Other";
 
         $modelFile = File::create(
             $strName,
@@ -98,7 +98,7 @@ class FileTest extends TestCase
         $strName = "fake";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 1;
+        $strCategoryId = "Other";
 
         $this->expectException(Exception::class);
 
@@ -115,7 +115,7 @@ class FileTest extends TestCase
         $strName = "directory";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 1;
+        $strCategoryId = "Other";
 
         $this->expectException(Exception::class);
 
@@ -132,7 +132,7 @@ class FileTest extends TestCase
         $strName = "unreadable";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 1;
+        $strCategoryId = "Other";
 
         $this->expectException(Exception::class);
 
@@ -149,7 +149,7 @@ class FileTest extends TestCase
         $strName = "Test 1";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 999;
+        $strCategoryId = "Invalid";
 
         $this->expectException(Exception::class);
 
@@ -166,7 +166,7 @@ class FileTest extends TestCase
         $strName = "Test 1";
         $strMimeType = "Test 2";
         $strDescription = "Test 3";
-        $strCategoryId = 1;
+        $strCategoryId = "Other";
         $strUploadPath = "Test 4";
 
         $modelFile = File::create(
