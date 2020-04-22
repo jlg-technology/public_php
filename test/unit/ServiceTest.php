@@ -228,7 +228,7 @@ class ServiceTest extends TestCase
         $strAppCompanyFileName        = "TestApplicantCompanyName";
         $strAppCompanyFileMimeType    = "Test MimeType Applicant Company";
         $strAppCompanyFileDescription = "A test file for the applicant company";
-        $intAppCompanyFileCategoryId  = ModelFile::CATEGORY_AML_CHECKLIST;
+        $intAppCompanyFileCategoryId  = ModelFile::CATEGORY_C19_SURVEY;
         $strAppCompanyFileUploadPath  = "Test Upload Path Applicant Company";
 
         $intCasePK = 999;

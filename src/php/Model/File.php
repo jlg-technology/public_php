@@ -13,95 +13,165 @@ class File extends AbstractModel
     const FIELD_CATEGORY_ID = "CategoryId";
     const FIELD_UPLOAD_PATH = "UploadPath";
 
-    const CATEGORY_SEARCHES = 1;
-    const CATEGORY_GUARANTOR_DETAILS = 7;
-    const CATEGORY_OTHER = 11;
-    const CATEGORY_BANK_STATEMENTS = 12;
-    const CATEGORY_LENDER_DOCS = 13;
-    const CATEGORY_OLD_FILE_CONTENTS = 18;
-    const CATEGORY_APPLICATION_FORMS = 19;
-    const CATEGORY_FINAL_FACILITY_AGREEMENTS = 20;
-    const CATEGORY_COMPLIANCE_DOCUMENTS = 21;
-    const CATEGORY_BUILDING_INSURANCE = 22;
-    const CATEGORY_DRAFT_FACILITY_AGREEMENTS = 23;
-    const CATEGORY_SOURCING_RESULTS = 24;
-    const CATEGORY_ID_AND_PROOF_OF_ADDRESS = 26;
-    const CATEGORY_LEGAL_DOCS_DRAFT = 29;
-    const CATEGORY_LEGAL_DOCS_FINAL = 30;
-    const CATEGORY_PROOF_OF_INCOME = 31;
-    const CATEGORY_COMPANY_ACCOUNTS = 32;
-    const CATEGORY_MORTGAGE_REFERENCES = 33;
-    const CATEGORY_VALUATION_AND_TITLE_PLANS = 34;
-    const CATEGORY_E_SIGN = 35;
-    const CATEGORY_ACCOUNT_DIRECTOR_LENDING_REPORT = 36;
-    const CATEGORY_LENDING_PANEL_REPORT = 37;
-    const CATEGORY_FACILITY_PACK = 38;
-    const CATEGORY_DEED_OF_GUARANTEE_AND_INDEMNITY = 39;
-    const CATEGORY_DEBENTURE = 40;
-    const CATEGORY_BOARD_RESOLUTION = 41;
-    const CATEGORY_LEGAL_WAIVER_NOTICE = 42;
-    const CATEGORY_INDEPENDENT_LEGAL_ADVICE_NOTICE = 43;
-    const CATEGORY_BRIDGING_OFFER = 44;
-    const CATEGORY_BRIDGING_OFFER_FINAL = 45;
-    const CATEGORY_COMPLETION_STATEMENT = 46;
-    const CATEGORY_ONLINE_CHAT_MANUSCRIPT = 47;
-    const CATEGORY_RECOVERIES = 48;
-    const CATEGORY_AML_CHECKLIST = 49;
-    const CATEGORY_LOAN_REPAYMENT_ILLUSTRATIONS = 50;
-    const CATEGORY_BROKER_DETAILS = 51;
-    const CATEGORY_BROKER_COMMISSION_PAYMENTS = 52;
-    const CATEGORY_SIMPLE_TASKS = 53;
+    const CATEGORY_ONLINE_CHAT_MANUSCRIPT          = 
+        "Online Chat Manuscript";
+    const CATEGORY_ID_AND_PROOF_OF_ADDRESS         = 
+        "ID & proof of address";
+    const CATEGORY_RECOVERIES                      = 
+        "Recoveries";
+    const CATEGORY_E_SIGN                          = 
+        "e-sign";
+    const CATEGORY_SIMPLE_TASKS                    = 
+        "Simple Tasks";
+    const CATEGORY_SEARCHES                        = 
+        "Searches";
+    const CATEGORY_ACCOUNT_DIRECTOR_LENDING_REPORT = 
+        "Account Director Lending Report (ADLR)";
+    const CATEGORY_EXECUTIVE_SUMMARY               = 
+        "Executive Summary";
+    const CATEGORY_C19_SURVEY                      = 
+        "C19 survey";
+    const CATEGORY_LENDING_PANEL_REPORT            = 
+        "Lending Panel Report (LPR)";
+    const CATEGORY_FACILITY_PACK                   = 
+        "Facility Pack";
+    const CATEGORY_DEED_OF_GUARANTEE_AND_INDEMNITY = 
+        "Deed of Guarantee & Indemnity (DOGI)";
+    const CATEGORY_DEBENTURE                       = 
+        "Debenture";
+    const CATEGORY_BOARD_RESOLUTION                = 
+        "Board Resolution";
+    const CATEGORY_LEGAL_WAIVER_NOTICE             = 
+        "Legal Waiver Notice";
+    const CATEGORY_INDEPENDENT_LEGAL_ADVICE_NOTICE = 
+        "Independent Legal Advice Notice";
+    const CATEGORY_COMPLETION_STATEMENT            = 
+        "Completion Statement";
+    const CATEGORY_BANK_STATEMENTS                 = 
+        "Bank statements";
+    const CATEGORY_AML_DOCUMENTATION               = 
+        "AML Documentation";
+    const CATEGORY_PROOF_OF_INCOME                 = 
+        "Proof of income";
+    const CATEGORY_COMPANY_ACCOUNTS                = 
+        "Company accounts";
+    const CATEGORY_MORTGAGE_REFERENCES             = 
+        "Mortgage references";
+    const CATEGORY_BRIDGING_OFFER                  = 
+        "Bridging Offer";
+    const CATEGORY_BRIDGING_OFFER_FINAL            = 
+        "Bridging Offer - FINAL";
+    const CATEGORY_LOAN_REPAYMENT_ILLUSTRATIONS    = 
+        "Loan Repayment Illustrations";
+    const CATEGORY_BROKER_DETAILS                  = 
+        "Broker Details";
+    const CATEGORY_GUARANTOR_DETAILS               = 
+        "Guarantor Details";
+    const CATEGORY_SOURCING_RESULTS                = 
+        "Sourcing Results";
+    const CATEGORY_APPLICATION_FORMS               = 
+        "Application Forms";
+    const CATEGORY_LENDER_DOCS                     = 
+        "Lender docs";
+    const CATEGORY_VALUATION_AND_TITLE_PLANS       = 
+        "Valuation and title plans";
+    const CATEGORY_COMPLIANCE_DOCUMENTS            = 
+        "Compliance Documents";
+    const CATEGORY_BUILDING_INSURANCE              = 
+        "Building Insurance";
+    const CATEGORY_DRAFT_FACILITY_AGREEMENTS       = 
+        "Draft facility agreements";
+    const CATEGORY_FINAL_FACILITY_AGREEMENTS       = 
+        "Final facility agreements";
+    const CATEGORY_OLD_FILE_CONTENTS               = 
+        "Old File Contents";
+    const CATEGORY_LEGAL_DOCS_DRAFT                = 
+        "Legal docs draft (charge, guarantees, debentures)";
+    const CATEGORY_COMPLAINTS                      = 
+        "Complaints ";
+    const CATEGORY_LEGAL_DOCS_FINAL                = 
+        "Legal docs final (charges, debenture, guarantees)";
+    const CATEGORY_OTHER                           = 
+        "Other";
+    const CATEGORY_BROKER_COMMISSION_PAYMENTS      = 
+        "Broker Commission Payments";
 
     const CATEGORIES = [
-        self::CATEGORY_SEARCHES,
-        self::CATEGORY_GUARANTOR_DETAILS,
-        self::CATEGORY_OTHER,
-        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_ONLINE_CHAT_MANUSCRIPT,
         self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
+        self::CATEGORY_RECOVERIES,
+        self::CATEGORY_E_SIGN,
+        self::CATEGORY_SIMPLE_TASKS,
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_ACCOUNT_DIRECTOR_LENDING_REPORT,
+        self::CATEGORY_EXECUTIVE_SUMMARY,
+        self::CATEGORY_C19_SURVEY,
+        self::CATEGORY_LENDING_PANEL_REPORT,
+        self::CATEGORY_FACILITY_PACK,
+        self::CATEGORY_DEED_OF_GUARANTEE_AND_INDEMNITY,
+        self::CATEGORY_DEBENTURE,
+        self::CATEGORY_BOARD_RESOLUTION,
+        self::CATEGORY_LEGAL_WAIVER_NOTICE,
+        self::CATEGORY_INDEPENDENT_LEGAL_ADVICE_NOTICE,
+        self::CATEGORY_COMPLETION_STATEMENT,
+        self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_AML_DOCUMENTATION,
         self::CATEGORY_PROOF_OF_INCOME,
         self::CATEGORY_COMPANY_ACCOUNTS,
         self::CATEGORY_MORTGAGE_REFERENCES,
+        self::CATEGORY_BRIDGING_OFFER,
+        self::CATEGORY_BRIDGING_OFFER_FINAL,
+        self::CATEGORY_LOAN_REPAYMENT_ILLUSTRATIONS,
+        self::CATEGORY_BROKER_DETAILS,
+        self::CATEGORY_GUARANTOR_DETAILS,
+        self::CATEGORY_SOURCING_RESULTS,
+        self::CATEGORY_APPLICATION_FORMS,
+        self::CATEGORY_LENDER_DOCS,
         self::CATEGORY_VALUATION_AND_TITLE_PLANS,
-        self::CATEGORY_AML_CHECKLIST
+        self::CATEGORY_COMPLIANCE_DOCUMENTS,
+        self::CATEGORY_BUILDING_INSURANCE,
+        self::CATEGORY_DRAFT_FACILITY_AGREEMENTS,
+        self::CATEGORY_FINAL_FACILITY_AGREEMENTS,
+        self::CATEGORY_OLD_FILE_CONTENTS,
+        self::CATEGORY_LEGAL_DOCS_DRAFT,
+        self::CATEGORY_COMPLAINTS,
+        self::CATEGORY_LEGAL_DOCS_FINAL,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BROKER_COMMISSION_PAYMENTS
     ];
 
     // A company's file must have one of these categories
     const COMPANY_CATEGORIES = [
         self::CATEGORY_SEARCHES,
-        self::CATEGORY_OTHER,
+        self::CATEGORY_EXECUTIVE_SUMMARY,
+        self::CATEGORY_C19_SURVEY,
         self::CATEGORY_BANK_STATEMENTS,
+        self::CATEGORY_AML_DOCUMENTATION,
         self::CATEGORY_COMPANY_ACCOUNTS,
         self::CATEGORY_MORTGAGE_REFERENCES,
         self::CATEGORY_VALUATION_AND_TITLE_PLANS,
-        self::CATEGORY_AML_CHECKLIST
+        self::CATEGORY_COMPLAINTS,
+        self::CATEGORY_OTHER
     ];
 
     // A person's file must have one of these categories
     const PERSON_CATEGORIES = [
-        self::CATEGORY_SEARCHES,
-        self::CATEGORY_GUARANTOR_DETAILS,
-        self::CATEGORY_OTHER,
-        self::CATEGORY_BANK_STATEMENTS,
         self::CATEGORY_ID_AND_PROOF_OF_ADDRESS,
+        self::CATEGORY_SEARCHES,
+        self::CATEGORY_BANK_STATEMENTS,
         self::CATEGORY_PROOF_OF_INCOME,
         self::CATEGORY_MORTGAGE_REFERENCES,
-        self::CATEGORY_VALUATION_AND_TITLE_PLANS
+        self::CATEGORY_GUARANTOR_DETAILS,
+        self::CATEGORY_VALUATION_AND_TITLE_PLANS,
+        self::CATEGORY_OTHER
     ];
 
     // A loan's file must have one of these categories
     const LOAN_CATEGORIES = [
-        self::CATEGORY_OTHER,
-        self::CATEGORY_LENDER_DOCS,
-        self::CATEGORY_OLD_FILE_CONTENTS,
-        self::CATEGORY_APPLICATION_FORMS,
-        self::CATEGORY_FINAL_FACILITY_AGREEMENTS,
-        self::CATEGORY_COMPLIANCE_DOCUMENTS,
-        self::CATEGORY_BUILDING_INSURANCE,
-        self::CATEGORY_DRAFT_FACILITY_AGREEMENTS,
-        self::CATEGORY_SOURCING_RESULTS,
-        self::CATEGORY_LEGAL_DOCS_DRAFT,
-        self::CATEGORY_LEGAL_DOCS_FINAL,
+        self::CATEGORY_ONLINE_CHAT_MANUSCRIPT,
+        self::CATEGORY_RECOVERIES,
         self::CATEGORY_E_SIGN,
+        self::CATEGORY_SIMPLE_TASKS,
         self::CATEGORY_ACCOUNT_DIRECTOR_LENDING_REPORT,
         self::CATEGORY_LENDING_PANEL_REPORT,
         self::CATEGORY_FACILITY_PACK,
@@ -110,22 +180,30 @@ class File extends AbstractModel
         self::CATEGORY_BOARD_RESOLUTION,
         self::CATEGORY_LEGAL_WAIVER_NOTICE,
         self::CATEGORY_INDEPENDENT_LEGAL_ADVICE_NOTICE,
+        self::CATEGORY_COMPLETION_STATEMENT,
         self::CATEGORY_BRIDGING_OFFER,
         self::CATEGORY_BRIDGING_OFFER_FINAL,
-        self::CATEGORY_COMPLETION_STATEMENT,
-        self::CATEGORY_ONLINE_CHAT_MANUSCRIPT,
-        self::CATEGORY_RECOVERIES,
         self::CATEGORY_LOAN_REPAYMENT_ILLUSTRATIONS,
         self::CATEGORY_BROKER_DETAILS,
-        self::CATEGORY_BROKER_COMMISSION_PAYMENTS,
-        self::CATEGORY_SIMPLE_TASKS
+        self::CATEGORY_SOURCING_RESULTS,
+        self::CATEGORY_APPLICATION_FORMS,
+        self::CATEGORY_LENDER_DOCS,
+        self::CATEGORY_COMPLIANCE_DOCUMENTS,
+        self::CATEGORY_BUILDING_INSURANCE,
+        self::CATEGORY_DRAFT_FACILITY_AGREEMENTS,
+        self::CATEGORY_FINAL_FACILITY_AGREEMENTS,
+        self::CATEGORY_OLD_FILE_CONTENTS,
+        self::CATEGORY_LEGAL_DOCS_DRAFT,
+        self::CATEGORY_LEGAL_DOCS_FINAL,
+        self::CATEGORY_OTHER,
+        self::CATEGORY_BROKER_COMMISSION_PAYMENTS
     ];
 
     public static function create(
         string $strName,
         string $strMimeType,
         string $strDescription,
-        int $intCategoryId
+        string $strCategoryId
     ) : self
     {
         if (!file_exists($strName)) {
@@ -140,8 +218,8 @@ class File extends AbstractModel
             throw new Exception("'$strName' is not readable");
         }
 
-        if (!in_array($intCategoryId, self::CATEGORIES)) {
-            throw new Exception("'$intCategoryId' is not a valid category Id");
+        if (!in_array($strCategoryId, self::CATEGORIES)) {
+            throw new Exception("'$strCategoryId' is not a valid category Id");
         }
 
         return new self(
@@ -149,7 +227,7 @@ class File extends AbstractModel
                 self::FIELD_NAME        => $strName,
                 self::FIELD_MIME_TYPE   => $strMimeType,
                 self::FIELD_DESCRIPTION => $strDescription,
-                self::FIELD_CATEGORY_ID => $intCategoryId
+                self::FIELD_CATEGORY_ID => $strCategoryId
             ]
         );
     }
@@ -183,7 +261,7 @@ class File extends AbstractModel
         return $this->_getField(self::FIELD_DESCRIPTION);
     }
 
-    public function getCategoryId() : int
+    public function getCategoryId() : string
     {
         return $this->_getField(self::FIELD_CATEGORY_ID);
     }
