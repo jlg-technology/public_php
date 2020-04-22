@@ -413,7 +413,10 @@ class Service
                 "Notes"           => $modelPerson->getNotes(),
                 "Position"        => $modelPerson->getPosition(),
                 "Gender"          => $modelPerson->getGender(),
-                "Files"           => $arrFiles
+                "Files"           => $arrFiles,
+                "PassportForename"  => $modelPerson->getPassportForename(),
+                "PassportMiddleName"=> $modelPerson->getPassportMiddleName(),
+                "PassportSurname"   => $modelPerson->getPassportSurname()
             ];
 
             if ($modelPerson->getIsPrimaryContact()) {
