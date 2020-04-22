@@ -27,6 +27,9 @@ class Person extends AbstractModel
     const FIELD_POSITION           = "Position";
     const FIELD_IS_PRIMARY_CONTACT = "PrimaryContact";
     const FIELD_FILES              = "Files";
+    const FIELD_PASSPORT_FORENAME    = 'PassportForename';
+    const FIELD_PASSPORT_MIDDLENAME  = 'PassportMiddleName';
+    const FIELD_PASSPORT_SURNAME     = 'PassportSurname';
 
     const TITLE_MR   = "Mr";
     const TITLE_MRS  = "Mrs";
@@ -68,7 +71,10 @@ class Person extends AbstractModel
         ?string $strNotes,
         ?int $intPosition,
         ?bool $boolPrimaryContact,
-        ?array $arrModelFiles
+        ?array $arrModelFiles,
+        ?string $strPassportForename,
+        ?string $strPassportMiddleName,
+        ?string $strPassportSurname
     ) : self
     {
         if (
@@ -166,7 +172,10 @@ class Person extends AbstractModel
                 self::FIELD_NOTES              => $strNotes,
                 self::FIELD_POSITION           => $intPosition,
                 self::FIELD_IS_PRIMARY_CONTACT => $boolPrimaryContact,
-                self::FIELD_FILES              => $arrModelFiles
+                self::FIELD_FILES              => $arrModelFiles,
+                self::FIELD_PASSPORT_FORENAME   => $strPassportForename,
+                self::FIELD_PASSPORT_MIDDLENAME => $strPassportMiddleName,
+                self::FIELD_PASSPORT_SURNAME     => $strPassportSurname
             ]
         );
     }
@@ -194,7 +203,10 @@ class Person extends AbstractModel
             self::FIELD_NOTES,
             self::FIELD_POSITION,
             self::FIELD_IS_PRIMARY_CONTACT,
-            self::FIELD_FILES
+            self::FIELD_FILES,
+            self::FIELD_PASSPORT_FORENAME,
+            self::FIELD_PASSPORT_MIDDLENAME,
+            self::FIELD_PASSPORT_SURNAME
         ];
     }
 
@@ -211,6 +223,21 @@ class Person extends AbstractModel
     public function getSurname() : string
     {
         return $this->_getField(self::FIELD_SURNAME);
+    }
+
+    public function getPassportForename() : ?string
+    {
+        return $this->_getField(self::FIELD_PASSPORT_FORENAME);
+    }
+
+    public function getPassportMiddleName() : ?string
+    {
+        return $this->_getField(self::FIELD_PASSPORT_MIDDLENAME);
+    }
+
+    public function getPassportSurname() : ?string
+    {
+        return $this->_getField(self::FIELD_PASSPORT_SURNAME);
     }
 
     public function getDateOfBirth() : DateTime

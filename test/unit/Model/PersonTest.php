@@ -38,7 +38,10 @@ class PersonTest extends TestCase
                 "Notes",
                 "Position",
                 "PrimaryContact",
-                "Files"
+                "Files",
+                "PassportForename",
+                "PassportMiddleName",
+                "PassportSurname"
             ],
             Person::getFields()
         );
@@ -71,6 +74,9 @@ class PersonTest extends TestCase
                 ->once()
                 ->mock()
         ];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
 
         $modelPerson = Person::create(
             $strForename,
@@ -90,7 +96,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
 
         $this->assertEquals(
@@ -106,6 +115,21 @@ class PersonTest extends TestCase
         $this->assertEquals(
             $strSurname,
             $modelPerson->getSurname()
+        );
+
+        $this->assertEquals(
+            $strPassportForename,
+            $modelPerson->getPassportForename()
+        );
+
+        $this->assertEquals(
+            $strPassportMiddleName,
+            $modelPerson->getPassportMiddleName()
+        );
+
+        $this->assertEquals(
+            $strPassportSurname,
+            $modelPerson->getPassportSurname()
         );
 
         $this->assertEquals(
@@ -206,6 +230,9 @@ class PersonTest extends TestCase
         $arrModelFiles       = [
             Mockery::mock(File::class)
         ];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
 
         $this->expectException(Exception::class);
 
@@ -227,7 +254,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
     }
 
@@ -253,6 +283,9 @@ class PersonTest extends TestCase
         $arrModelFiles       = [
             Mockery::mock(File::class)
         ];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
 
         $this->expectException(Exception::class);
 
@@ -274,7 +307,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
     }
 
@@ -300,6 +336,9 @@ class PersonTest extends TestCase
         $arrModelFiles       = [
             Mockery::mock(File::class)
         ];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
 
         $this->expectException(Exception::class);
 
@@ -321,7 +360,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
     }
 
@@ -347,6 +389,9 @@ class PersonTest extends TestCase
         $arrModelFiles       = [
             Mockery::mock(File::class)
         ];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
 
         $this->expectException(Exception::class);
 
@@ -368,7 +413,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
     }
 
@@ -394,6 +442,10 @@ class PersonTest extends TestCase
         $arrModelFiles       = [
             Mockery::mock(Loan::class)
         ];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
+
 
         $this->expectException(Exception::class);
 
@@ -415,7 +467,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
     }
 
@@ -450,6 +505,9 @@ class PersonTest extends TestCase
                 ->once()
                 ->mock()
         ];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
 
         $this->expectException(Exception::class);
 
@@ -471,7 +529,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
     }
 
@@ -495,6 +556,9 @@ class PersonTest extends TestCase
         $intPosition         = Person::POSITION_DIRECTOR_BIT;
         $boolPrimaryContact  = true;
         $arrModelFiles       = [];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
 
         $modelPerson = Person::create(
             $strForename,
@@ -514,7 +578,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
 
         $this->assertEquals(
@@ -557,6 +624,10 @@ class PersonTest extends TestCase
         $intPosition         = Person::POSITION_DIRECTOR_BIT;
         $boolPrimaryContact  = true;
         $arrModelFiles       = [];
+        $strPassportForename = "Forename";
+        $strPassportMiddleName = "MiddleName";
+        $strPassportSurname = "Surname";
+
 
         $modelPerson = Person::create(
             $strForename,
@@ -576,7 +647,10 @@ class PersonTest extends TestCase
             $strNotes,
             $intPosition,
             $boolPrimaryContact,
-            $arrModelFiles
+            $arrModelFiles,
+            $strPassportForename,
+            $strPassportMiddleName,
+            $strPassportSurname
         );
 
         $this->assertEquals(

@@ -199,6 +199,10 @@ class ServiceTest extends TestCase
         $strAppPersonFileDescription = "A test file for the applicant person";
         $intAppPersonFileCategoryId  = ModelFile::CATEGORY_GUARANTOR_DETAILS;
         $strAppPersonFileUploadPath  = "Test Upload Path Applicant Person";
+        
+        $strAppPersonPassportForename = 'PassForename';
+        $strAppPersonPassportMiddleName = 'PassMiddleName';
+        $strAppPersonPassportSurname = 'PassSurname';
 
         $strAppCompanyName               = "Test Applicant Company";
         $strAppCompanyCRN                = "64564572";
@@ -501,7 +505,21 @@ class ServiceTest extends TestCase
             ->withNoArgs()
             ->andReturn($boolAppPersonIsPrimaryContact)
             ->once()
+            ->shouldReceive("getPassportForename")
+            ->withNoArgs()
+            ->andReturn($strAppPersonPassportForename)
+            ->once()
+            ->shouldReceive("getPassportMiddleName")
+            ->withNoArgs()
+            ->andReturn($strAppPersonPassportMiddleName)
+            ->once()
+            ->shouldReceive("getPassportSurname")
+            ->withNoArgs()
+            ->andReturn($strAppPersonPassportSurname)
+            ->once()
             ->mock();
+
+
 
         /**
          * Applicant company models
@@ -797,7 +815,10 @@ class ServiceTest extends TestCase
                                 "MimeType"          => 
                                     $strAppPersonFileMimeType
                             ]
-                        ]
+                        ],
+                        "PassportForename" => $strAppPersonPassportForename,
+                        "PassportMiddleName" => $strAppPersonPassportMiddleName,
+                        "PassportSurname" => $strAppPersonPassportSurname
                     ],
                     [
                         "Type"                      => "Company",
@@ -926,6 +947,9 @@ class ServiceTest extends TestCase
         $strAppPersonNotes             = "Notes about the applicant person";
         $intAppPersonPosition          = ModelCompany::POSITION_DIRECTOR_BIT;
         $boolAppPersonIsPrimaryContact = false;
+        $strAppPersonPassportForename = 'PassForename';
+        $strAppPersonPassportMiddleName = 'PassMiddleName';
+        $strAppPersonPassportSurname = 'PassSurname';
 
         $intCasePK = 999;
 
@@ -1115,6 +1139,18 @@ class ServiceTest extends TestCase
             ->shouldReceive("getIsPrimaryContact")
             ->withNoArgs()
             ->andReturn($boolAppPersonIsPrimaryContact)
+            ->once()
+            ->shouldReceive("getPassportForename")
+            ->withNoArgs()
+            ->andReturn($strAppPersonPassportForename)
+            ->once()
+            ->shouldReceive("getPassportMiddleName")
+            ->withNoArgs()
+            ->andReturn($strAppPersonPassportMiddleName)
+            ->once()
+            ->shouldReceive("getPassportSurname")
+            ->withNoArgs()
+            ->andReturn($strAppPersonPassportSurname)
             ->once()
             ->mock();
 
