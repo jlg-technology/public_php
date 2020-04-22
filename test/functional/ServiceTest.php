@@ -27,17 +27,17 @@ class ServiceTest extends TestCase
         Service::setDebugMode(false);
     }
 
-    // public function testCreateFromToken()
-    // {
-    //     $strJWT = "Test";
+    public function testCreateFromToken()
+    {
+        $strJWT = "Test";
 
-    //     $objService = Service::createFromToken($strJWT);
+        $objService = Service::createFromToken($strJWT);
 
-    //     $this->assertEquals(
-    //         $strJWT,
-    //         $objService->getToken()
-    //     );
-    // }
+        $this->assertEquals(
+            $strJWT,
+            $objService->getToken()
+        );
+    }
 
     public function testCreateFromCredentials_Invalid_Credentials()
     {
