@@ -29,7 +29,7 @@ class Service
     public  const CRM_AUTH_ENDPOINT = 
         "https://auth.just-cashflow.com/oauth/token";
     public  const CRM_API_URL       = "https://api.crm.prod.jlg-technology.com";
-    private const CRM_DEV_API_URL   = "http://api.alfi.local";
+    private const CRM_DEV_API_URL   = "https://api.crm.dev.jlg-technology.com";
 
     private const DATE_TIME_FORMAT = "Y-m-d H:i:s";
 
@@ -280,15 +280,20 @@ class Service
     }
 
     /**
-     * Returns a file from the dropbox bucket
+     * Returns a presigned url to a file from the dropbox bucket
      */
-    public function getUploadedFile(string $strUploadPath)
+    public function getUploadedFilePresignedUrl(string $strUploadPath)
     {
         /**
          * Validate that a non empty string was given
          */
-        if ($strUploadPath === "") {
-            throw new Exception("Invalid upload path provided - is empty");
+        if (
+            $strUploadPath === "" ||
+            strpos($strUploadPath, ' ') !== false
+        ) {
+            throw new Exception(
+                "Invalid upload path provided - is $strUploadPath"
+            );
         }
 
         return $this->_uploadGet($strUploadPath);
@@ -379,6 +384,11 @@ class Service
             "Authorization" => $this->_strJWT
         ];
 
+        /**
+         * The value returned by make request would be the file's raw data
+         * but we want the presigned url so we want to get the guzzle response
+         * from the request which'll hold the presigned url
+         */
         $this->_makeRequest(
             $strPath,
             $strMethod,
@@ -391,9 +401,10 @@ class Service
          * _makeRequest tracks redirects which guzzle places in the
          * GuzzleRedirectMiddleware::HISTORY_HEADER of the response
          */
-        return $guzzleResponse->getHeader(
+        $arrRedirectedToUrls = $guzzleResponse->getHeader(
             GuzzleRedirectMiddleware::HISTORY_HEADER
         );
+        return end($arrRedirectedToUrls);
     }
 
     /**
