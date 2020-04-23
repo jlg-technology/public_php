@@ -16,7 +16,8 @@ use GuzzleHttp\Handler\MockHandler as GuzzleMockHandler;
 use GuzzleHttp\{
     Client as GuzzleClient,
     HandlerStack as GuzzleHandlerStack,
-    Middleware as GuzzleMiddleware
+    Middleware as GuzzleMiddleware,
+    RedirectMiddleware as GuzzleRedirectMiddleware
 };
 
 use GuzzleHttp\Psr7\{
@@ -1166,5 +1167,83 @@ class ServiceTest extends TestCase
             $mockModelLoan,
             [$mockModelAppPerson]
         );
+    }
+
+    public function testGetUploadedFilePresignedUrl()
+    {
+        $strFileName = "TestFileName.txt";
+
+        $strPresignedUrl = "test.presigned.url/for/the/file";
+
+        /**
+         * Create the mock handler
+         */
+        $mockGuzzleHandler = new GuzzleMockHandler([
+            new GuzzleResponse(
+                200,
+                [
+                    GuzzleRedirectMiddleware::HISTORY_HEADER => [
+                        $strPresignedUrl
+                    ]
+                ],
+                "Body"
+            )
+        ]);
+
+        /**
+         * Create a guzzle stack from the mock handler
+         */
+        $objGuzzleStack = GuzzleHandlerStack::create($mockGuzzleHandler);
+
+        /**
+         * Add in a history middleware to view the requests made
+         */
+        $arrRequestHistory = [];
+        $objGuzzleMiddleware = GuzzleMiddleware::history($arrRequestHistory);
+        $objGuzzleStack->push($objGuzzleMiddleware);
+
+        /**
+         * Create a guzzle client with the stack with the mock handler and
+         * request history middleware
+         */
+        $mockGuzzleClient = new GuzzleClient(['handler' => $objGuzzleStack]);
+
+        /**
+         * Inject guzzle client into the service
+         */
+        Service::setGuzzleClientForUnitTests($mockGuzzleClient);
+
+        $objService = Service::createFromToken("Test Token");
+
+        $strResponse = $objService->getUploadedFilePresignedUrl($strFileName);
+
+        $this->assertEquals(
+            $strPresignedUrl,
+            $strResponse
+        );
+
+        /**
+         * Validate the case POST request was properly formatted
+         */
+        $guzzleRequest = $arrRequestHistory[0]["request"];
+
+        $this->assertEquals(
+            "GET",
+            $guzzleRequest->getMethod()
+        );
+
+        $this->assertEquals(
+            Service::CRM_API_URL . "/upload?File=$strFileName",
+            (string)$guzzleRequest->getUri()
+        );
+    }
+
+    public function testGetUploadedFilePresignedUrl_Invalid_Filename()
+    {
+        $objService = Service::createFromToken("Test Token");
+
+        $this->expectException(Exception::class);
+
+        $objService->getUploadedFilePresignedUrl("File name with spaces");
     }
 }

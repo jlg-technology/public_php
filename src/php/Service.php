@@ -11,8 +11,11 @@ use jlgtechnology\model\{
 
 use GuzzleHttp\{
     Client as GuzzleClient,
-    RequestOptions
+    RequestOptions as GuzzleRequestOptions,
+    RedirectMiddleware as GuzzleRedirectMiddleware
 };
+
+use Psr\Http\Message\ResponseInterface;
 
 use GuzzleHttp\Exception\{
     ClientException,
@@ -72,8 +75,8 @@ class Service
          * Create the guzzle options
          */
         $arrOptions = [
-            RequestOptions::HEADERS => $arrHeaders,
-            RequestOptions::JSON    => $arrData
+            GuzzleRequestOptions::HEADERS => $arrHeaders,
+            GuzzleRequestOptions::JSON    => $arrData
         ];
 
         try {
@@ -277,6 +280,26 @@ class Service
     }
 
     /**
+     * Returns a presigned url to a file from the dropbox bucket
+     */
+    public function getUploadedFilePresignedUrl(string $strUploadPath)
+    {
+        /**
+         * Validate that a non empty string was given
+         */
+        if (
+            $strUploadPath === "" ||
+            strpos($strUploadPath, ' ') !== false
+        ) {
+            throw new Exception(
+                "Invalid upload path provided - is $strUploadPath"
+            );
+        }
+
+        return $this->_uploadGet($strUploadPath);
+    }
+
+    /**
      * Calls /upload POST
      */
     private function _uploadPost(array $arrModelFiles)
@@ -346,6 +369,42 @@ class Service
         foreach ($arrModelFiles as $key => $modelFile) {
             $modelFile->setUploadPath($arrResponse[$key]);
         }
+    }
+
+    /**
+     * Calls /upload GET
+     */
+    private function _uploadGet(string $strUploadPath)
+    {
+        $strPath   = "/upload?File=$strUploadPath";
+
+        $strMethod = "GET";
+
+        $arrHeaders = [
+            "Authorization" => $this->_strJWT
+        ];
+
+        /**
+         * The value returned by make request would be the file's raw data
+         * but we want the presigned url so we want to get the guzzle response
+         * from the request which'll hold the presigned url
+         */
+        $this->_makeRequest(
+            $strPath,
+            $strMethod,
+            $arrHeaders,
+            null,
+            $guzzleResponse
+        );
+
+        /**
+         * _makeRequest tracks redirects which guzzle places in the
+         * GuzzleRedirectMiddleware::HISTORY_HEADER of the response
+         */
+        $arrRedirectedToUrls = $guzzleResponse->getHeader(
+            GuzzleRedirectMiddleware::HISTORY_HEADER
+        );
+        return end($arrRedirectedToUrls);
     }
 
     /**
@@ -497,22 +556,44 @@ class Service
     }
 
     /**
-     * Makes a request and decodes a JSON response
+     * Makes a request to the API and returns the response
      */
     private function _makeRequest(
         string $strPath,
         string $strMethod,
         array $arrHeaders = [],
-        $mixedData = null
-    ) : ?array
+        $mixedData = null,
+        ResponseInterface &$guzzleResponse = null
+    )
     {
-        $arrOptions = [];
+        /**
+         * Guzzle response is an output only parameter
+         */
+        $guzzleResponse = null;
+
+        /**
+         * Set up the options array
+         * ALLOW_REDIRECTS: Allow them and track them in order to get the 
+         *                  effective URL of redirects.
+         *                  The tracked URLs will be found in the 
+         *                  GuzzleRedirectMiddleware::HISTORY_HEADER header
+         *                  in the response
+         * 
+         * HEADERS: The user defined headers sent to the API.
+         * 
+         * JSON/MULTIPART/FORM_PARAMS: The body of the request.
+         */
+        $arrOptions = [
+            GuzzleRequestOptions::ALLOW_REDIRECTS => [
+                'track_redirects' => true
+            ]
+        ];
 
         /**
          * Set the headers if they exist
          */
         if ($arrHeaders) {
-            $arrOptions[RequestOptions::HEADERS] = $arrHeaders;
+            $arrOptions[GuzzleRequestOptions::HEADERS] = $arrHeaders;
         }
 
         /**
@@ -521,20 +602,29 @@ class Service
         if ($mixedData) {
             switch ($arrHeaders["Content-Type"] ?? null) {
                 case "application/json":
-                    $arrOptions[RequestOptions::JSON] = $mixedData;
+                    $arrOptions[GuzzleRequestOptions::JSON] = $mixedData;
                     break;
                 default:
                     if (is_array($mixedData)) {
-                        $arrOptions[RequestOptions::MULTIPART] = $mixedData;
+                        $arrOptions[GuzzleRequestOptions::MULTIPART] = 
+                            $mixedData;
                     } else {
-                        $arrOptions[RequestOptions::FORM_PARAMS] = $mixedData;
+                        $arrOptions[GuzzleRequestOptions::FORM_PARAMS] = 
+                            $mixedData;
                     }
                     break;
             }
         }
 
+        /**
+         * Get the guzzle client
+         */
         $guzzleClient = self::_getGuzzleClient();
 
+        /**
+         * Make a request to the API and set the output 
+         * parameter $guzzleResponse to the request's response
+         */
         try {
             $guzzleResponse = $guzzleClient->request(
                 $strMethod,
@@ -594,22 +684,34 @@ class Service
         }
 
         /**
-         * Else the contents should always be in json format
+         * Decode the results based on what the request is supposed to accept
          */
-        $arrResponse = json_decode($objBody->getContents(), true);
+        switch ($arrHeaders["Accept"] ?? null) {
+            case "application/json":
+                /**
+                 * Decode the results to an array
+                 */
+                $arrResponse = json_decode($objBody->getContents(), true);
 
-        /**
-         * Check we were able to decode the results properly
-         */
-        if ($arrResponse === false) {
-            throw new Exception(
-                "Unable to decode results from server",
-                415
-            );
+                /**
+                 * Check we were able to decode the results properly
+                 */
+                if ($arrResponse === false) {
+                    throw new Exception(
+                        "Unable to decode results from server",
+                        415
+                    );
+                }
 
+                return $arrResponse;
+                break;
+            default:
+                /**
+                 * By default just return the contents of the body
+                 */
+                return $objBody->getContents();
+                break;
         }
-
-        return $arrResponse;
     }
 
     private function _getCompanyData(ModelCompany $modelCompany) 
