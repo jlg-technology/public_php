@@ -16,7 +16,7 @@
   "license": "UNLICENSED",
   "homepage": "https://github.com/jlg-technology/public_php#readme",
   "devDependencies": {
-    "grunt": "1.3.0",
+    "grunt": "1.5.2",
     "grunt-composer": "0.4.0",
     "grunt-exec": "0.4.6",
     "grunt-php-cs-fixer": "git+https://github.com/WalshyDev/grunt-php-cs-fixer.git",
